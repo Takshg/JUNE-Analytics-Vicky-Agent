@@ -1,0 +1,38 @@
+# Source: Appendix I. Plain-English definitions. Tidewell examples are historical unless marked forecast.
+ARR (annual recurring revenue): {means: "MRR times 12. Leaves out one-time fees.", example: "$1.29M (September 2026)"}
+Burn rate: {means: "How much cash the company loses each month.", example: "About $58K a month, April to September 2026, excluding the SR&ED refund"}
+Burn multiple: {means: "Net burn divided by net new ARR. Lower is more efficient.", example: "About 0.6 over the last 12 months, 0.8 without SR&ED"}
+CAC (customer acquisition cost): {means: "Sales and marketing spend divided by new customers won. \"Fully loaded\" includes salaries and commissions.", example: "About $3,200 fully loaded"}
+CAC payback: {means: "Months of gross profit from a new customer needed to earn back its CAC.", example: "About 9 to 10 months"}
+Cap table: {means: "Who owns what share of the company.", example: "Founders 45% each, 10% option pool, before the SAFEs convert"}
+Churn (logo): {means: "Share of customers who cancel in a period.", example: "2.0% a month over the last 12 months"}
+Churn (revenue): {means: "Share of MRR lost to cancellations in a period.", example: "Shown in the MRR bridge"}
+CMGR (compound monthly growth rate): {means: "The steady monthly growth rate that gets from a start value to an end value.", example: "About 9% a month, September 2025 to September 2026"}
+Cohort: {means: "A group of customers who started in the same period, tracked over time.", example: "Customers active in September 2025"}
+Contraction: {means: "MRR lost when existing customers reduce seats.", example: "Small at Tidewell"}
+Cost of revenue (COGS): {means: "Costs of delivering the product: hosting, third-party services, and usually support.", example: "Hosting, SMS, card fees. Support is not included in Tidewell's books."}
+Deferred revenue: {means: "Cash collected for service not yet delivered. A liability until earned.", example: "$181K at September 30, 2026"}
+Dilution: {means: "The drop in existing owners' percentage when new shares are issued.", example: "Happens when the seed round closes and the SAFEs convert"}
+Expansion: {means: "Extra MRR from existing customers adding seats or upgrading.", example: "About 0.4% of starting MRR a month"}
+Forecast: {means: "A projection of future results built on assumptions. Not a fact.", example: "Appendix C"}
+Gross margin: {means: "Gross profit divided by revenue.", example: "92% as booked, 74% including support"}
+Gross revenue retention (GRR): {means: "Revenue kept from a cohort after churn and contraction, ignoring expansion. Can't exceed 100%.", example: "About 81%"}
+Historical (actuals): {means: "Results from closed months in the books.", example: "October 2024 to September 2026"}
+Lead investor: {means: "The investor who sets the round's terms and usually takes the largest share.", example: "Tidewell wants a Canadian seed fund"}
+Logo: {means: "Investor shorthand for a customer.", example: "211 active logos"}
+MRR (monthly recurring revenue): {means: "Subscription revenue in a month, excluding one-time fees.", example: "$107,189 in September 2026"}
+Net new ARR: {means: "ARR at the end of a period minus ARR at the start.", example: "$830K over the last 12 months"}
+Net revenue retention (NRR): {means: "Revenue from a cohort now, divided by its revenue a year ago, including expansion and churn.", example: "About 88%"}
+Onboarding fee: {means: "One-time setup charge.", example: "$1,200 for 10+ seats"}
+Option pool: {means: "Shares set aside for employee stock options.", example: "10%"}
+Post-money valuation: {means: "Company value including the new money raised.", example: "Not given. Vicky does not recommend one."}
+Pre-money valuation: {means: "Company value before the new money.", example: "Not given"}
+Priced round: {means: "A round where investors buy shares at a set price per share.", example: "The $4M seed"}
+Ramp: {means: "Time for a new salesperson to reach full productivity.", example: "About 3 months historically. 1 month in the forecast."}
+Runway: {means: "Months until cash runs out at the current burn.", example: "About 8 months at September 30, 2026"}
+SAFE (simple agreement for future equity): {means: "Money invested now that turns into shares at the next priced round.", example: "$2.0M across two SAFEs"}
+Seat: {means: "One user licence, here one field technician.", example: "2,493 seats"}
+SR&ED: {means: "Canada's Scientific Research and Experimental Development tax credit. Small Canadian companies can get part of R&D spending back in cash.", example: "$278,700 received so far"}
+TAM, SAM, SOM: {means: "Total, serviceable and obtainable market. Should be sourced and ideally built bottom-up.", example: "$2B claimed with no source"}
+Use of funds: {means: "How the company plans to spend the money raised.", example: "Appendix C"}
+Valuation cap: {means: "The highest valuation at which a SAFE converts.", example: "$10M and $15M"}

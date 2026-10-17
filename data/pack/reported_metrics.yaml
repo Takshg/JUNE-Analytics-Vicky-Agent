@@ -1,0 +1,34 @@
+# Metrics stated in the data pack (Appendix D / H) that CANNOT be recomputed from the files we have:
+# they need customer-level data (05_customers.csv, 06_seats_by_customer_by_month.csv) not provided.
+# Provenance: reported_in_pack. The app must say these were not recomputed.
+nrr:
+  label: Net revenue retention (Sep 2025 cohort)
+  value: 0.88
+  detail: "Customers paying $38.0K/month in Sep 2025 pay $33.3K today."
+  ref: Appendix D Q4, Appendix H
+grr:
+  label: Gross revenue retention (Sep 2025 cohort)
+  value: 0.81
+  ref: Appendix D Q4, Appendix H
+early_churn_monthly_plans:
+  label: Monthly churn, monthly-plan customers in first 6 months
+  value: 0.033
+  ref: Appendix D Q3, Appendix H
+mature_churn_monthly_plans:
+  label: Monthly churn, monthly-plan customers after 6 months
+  value: 0.014
+  ref: Appendix D Q3, Appendix H
+ae_ramp_months_actual:
+  label: Months for existing AEs to reach 4-5 new customers/month
+  value: 3
+  unit: months
+  ref: Appendix D Q8, Appendix H (sales_owner in 05_customers.csv)
+mrr_per_new_customer:
+  label: Average MRR brought by a new customer
+  value: 458
+  ref: Appendix D Q6
+forecast_runway_historical_drivers:
+  label: Runway after a January 2027 close if growth stays at historical rates
+  value: 17
+  unit: months
+  ref: Appendix D Q10, Appendix H

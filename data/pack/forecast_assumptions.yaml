@@ -1,0 +1,74 @@
+# Source: Appendix C, founders' 18-month plan (Oct 2026 - Mar 2028). FORECAST, not actual.
+# "reasoning" is the founders' own explanation and has not been checked.
+- key: new_customers_per_ae
+  label: New customers per account executive per month, once ramped
+  value: 5
+  reasoning: "Priya closes 4 to 5 a month. New AEs will have a head of sales and better tools."
+- key: ae_ramp_months
+  label: Months for a new AE to reach full productivity
+  value: 1
+  reasoning: "Our product is easy to demo."
+- key: inbound_new_customers
+  label: Inbound new customers
+  value: "4 a month, growing 3% a month"
+  reasoning: "Our content is starting to compound."
+- key: seats_per_new_customer
+  label: Seats per new customer
+  value: 10
+  reasoning: "That's our average."
+- key: monthly_logo_churn
+  label: Monthly logo churn
+  value: 0.01
+  reasoning: "Most of our churn came from early customers on the old product."
+- key: net_seat_expansion
+  label: Net seat expansion in the existing base
+  value: "1.0% a month"
+  reasoning: "Customers add technicians as they grow."
+- key: new_list_price
+  label: List price for new customers
+  value: "$45, rising to $54 in January 2027"
+  reasoning: "We are cheaper than the competitors we lose to."
+- key: existing_price_increase
+  label: Price increase for existing customers
+  value: "20% in January 2027, for every customer including legacy $39 and annual plans. No extra churn assumed."
+  reasoning: "Nobody left when we raised prices for new customers in 2025."
+- key: ncg_renewal
+  label: Northern Comfort Group renewal
+  value: "Renews March 2027 at 600 seats and $40, plus a $20,000 onboarding fee"
+  reasoning: "Their COO told us they want every location on Tidewell. Nothing is signed."
+- key: cost_of_revenue
+  label: Cost of revenue
+  value: "12% of revenue"
+  reasoning: "A cushion over today's 8%."
+- key: sales_commissions
+  label: Sales commissions
+  value: "10% of first-year contract value"
+  reasoning: Same as today
+- key: onboarding_fee
+  label: Average onboarding fee per new customer
+  value: 900
+  reasoning: Blend of small and large customers
+- key: marketing_programs
+  label: Marketing programs
+  value: "$32,000 in October 2026, growing 8% a month"
+  reasoning: "Pour fuel on what works."
+- key: founder_pay
+  label: Founder pay
+  value: "$14,000 a month each, loaded, from January 2027"
+  reasoning: "Market rate after the raise."
+- key: ga_other
+  label: Office, audit and tools
+  value: "G&A other costs rise from $12,800 to $28,800 a month from January 2027"
+  reasoning: New office lease and a first audit
+- key: seed_round
+  label: Seed round
+  value: "$4,000,000 received January 2027"
+  reasoning: Target close date
+- key: srred_refund
+  label: SR&ED refund
+  value: "$240,000 received July 2027"
+  reasoning: "R&D spend is up, so the claim will be bigger."
+- key: cash_method
+  label: Cash
+  value: "Net income plus the raise minus equipment"
+  reasoning: "Receivables, payables and deferred revenue are not modelled."

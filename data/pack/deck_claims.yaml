@@ -1,0 +1,56 @@
+# Source: Appendix A, "What the founders' draft deck says". Provenance: founder_claim.
+# metric: the engine metric used to test the claim. why: why investors care (Appendix D).
+- id: arr
+  claim: "$1.37M ARR"
+  claimed_value: 1370000
+  metric: arr
+  why: ARR tests whether the founder knows recurring from one-time revenue. Investors calculate it as MRR x 12.
+  question: 1
+- id: growth
+  claim: "Growing 10% month over month"
+  claimed_value: 0.10
+  metric: cmgr_12m
+  why: Growth rate drives almost every other question, including how much the round is worth to an investor.
+  question: 2
+- id: gross_margin
+  claim: "92% gross margin"
+  claimed_value: 0.92
+  metric: gross_margin_incl_cs
+  why: Margin decides how much of each revenue dollar can pay for growth. Most SaaS investors count support in cost of revenue.
+  question: 5
+- id: churn
+  claim: "Monthly logo churn around 1%"
+  claimed_value: 0.01
+  metric: logo_churn_12m
+  why: SMB software lives or dies on churn. High churn means growth has to work harder just to stand still.
+  question: 3
+- id: nrr
+  claim: "Net revenue retention above 110%"
+  claimed_value: 1.10
+  metric: nrr
+  why: NRR shows whether existing customers grow or shrink, which tells an investor how much growth comes for free.
+  question: 4
+- id: cac
+  claim: "$970 customer acquisition cost, paid back in under 3 months"
+  claimed_value: 970
+  metric: cac_fully_loaded
+  why: CAC and payback show whether more sales and marketing money turns into profitable growth.
+  question: 6
+- id: tam
+  claim: "$2B total addressable market in North America"
+  claimed_value: 2000000000
+  metric: null
+  why: A large unsourced number tells an investor the founder hasn't done the work.
+  question: 12
+- id: ncg
+  claim: "Northern Comfort Group is expanding to 600 seats next year"
+  claimed_value: 600
+  metric: ncg_share_of_mrr
+  why: One customer can make a small company look bigger than it is, and a renewal can go either way.
+  question: 9
+- id: runway
+  claim: "$4M gives us 24 months of runway and gets us to $5M ARR"
+  claimed_value: 24
+  metric: plan_runway_after_close
+  why: Investors judge whether founders understand their burn and have planned for the next round.
+  question: 10

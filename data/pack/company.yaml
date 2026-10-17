@@ -1,0 +1,87 @@
+# Source: Appendix A (case overview) and Appendix B snapshot, AI Pitch Coach Supporting Resources.
+# Tidewell Systems is fictional; all figures synthetic, CAD.
+name: Tidewell Systems Inc.
+hq: Toronto, Ontario, Canada
+incorporated: 2024-01
+fiscal_year_end: December 31
+product: >-
+  Tidewell Dispatch, scheduling and dispatch software for trades businesses with 3 to 30
+  field technicians (HVAC, plumbing, electrical, landscaping, pest control, appliance repair).
+  Job booking, technician routing, quotes, invoices and automatic customer text messages.
+founders:
+  - name: Jennifer
+    role: CEO, handles sales and fundraising
+  - name: Craig
+    role: CTO, runs product and engineering
+founder_background: >-
+  Both met as software engineers at a large Canadian software company. Neither has raised a
+  priced round, built a financial model before this one, or managed a P&L.
+pricing:
+  list_price_per_seat: 45
+  list_price_since: 2025-07
+  legacy_price_per_seat: 39
+  legacy_customers: 59
+  annual_prepay_customers: 45
+  onboarding_fee: "$1,200 one time for 10+ seats; larger accounts quoted"
+  billing: Monthly by card or invoice; annual plans can only be cancelled at renewal.
+channels: [Two account executives (outbound), Inbound from content and search, Partner referrals from a plumbing and HVAC supply distributor, Founders' network]
+competitors: [Jobber, Housecall Pro, ServiceTitan, spreadsheets or paper]
+largest_customer:
+  name: Northern Comfort Group
+  description: 31-location HVAC franchise network
+  seats: 260
+  price_per_seat: 40
+  billing: prepaid annually
+  signed: 2026-03
+  renews: 2027-03
+  prepayment: 124800
+  unearned_at_2026_09_30: 52000
+snapshot_2026_09_30:   # Appendix B, actual
+  mrr: 107189
+  revenue_ltm: 1001816
+  net_loss_ltm: 656262
+  cash: 483270
+  deferred_revenue: 181327
+  customers: 211
+  seats: 2493
+  headcount: 14
+team: "2 founders, 6 software engineers, 2 account executives, 1 marketing manager, 3 customer success. Bookkeeping outsourced part time. No finance person."
+funding:
+  - {date: 2024-06, source: "Pre-seed SAFE (angels and a pre-seed fund)", amount: 1500000, terms: "Post-money SAFE, $10M valuation cap"}
+  - {date: 2025-06, source: "SR&ED refundable tax credit (fiscal 2024 claim)", amount: 96400, terms: "Non-dilutive"}
+  - {date: 2026-02, source: "SAFE extension (existing angels)", amount: 500000, terms: "Post-money SAFE, $15M valuation cap"}
+  - {date: 2026-07, source: "SR&ED refundable tax credit (fiscal 2025 claim)", amount: 182300, terms: "Non-dilutive"}
+cap_table_before_safes: "Jennifer 45%, Craig 45%, option pool 10%"
+raise:
+  amount: 4000000
+  type: priced equity seed
+  target_close: 2027-01
+  meetings_start: 2026-11
+  desired_investors: "Canadian seed fund to lead, with angels and possibly a strategic investor from the trades industry"
+  goal: "Series A at $5M ARR"
+use_of_funds:   # Appendix C, founders' slide; "24 months of runway"
+  - {category: Product and engineering, share: 0.45, amount: 1800000}
+  - {category: Sales and marketing, share: 0.40, amount: 1600000}
+  - {category: G&A and operations, share: 0.10, amount: 400000}
+  - {category: Reserve, share: 0.05, amount: 200000}
+hiring_plan:    # Appendix C summary; 10_hiring_plan.csv not provided
+  - {department: R&D, today: 7, hires: 14, end: 21, roles: "VP engineering, 10 software engineers, data engineer, product manager, product designer"}
+  - {department: Sales, today: 2, hires: 9, end: 11, roles: "Head of sales, 4 account executives, 3 SDRs, sales engineer"}
+  - {department: Marketing, today: 1, hires: 3, end: 4, roles: "Demand generation, content, events and partnerships"}
+  - {department: Customer success, today: 3, hires: 4, end: 7, roles: "4 customer success staff"}
+  - {department: G&A, today: 1, hires: 2, end: 3, roles: "Controller, people and operations"}
+bookkeeping_policies:
+  - Cost of revenue includes hosting, SMS and telephony, and card processing fees.
+  - Customer success salaries are recorded in operating expenses, not cost of revenue.
+  - SR&ED credits are recorded as other income in the month the cash arrives.
+  - Annual plans are billed up front, recorded as deferred revenue and recognized monthly.
+  - Onboarding fees are recognized in the month the customer signs.
+  - Salaries are loaded costs (pay plus payroll taxes and benefits).
+  - No pipeline data; the company does not track its sales pipeline in a CRM.
+founders_worry: "We know the product. We don't know what a seed investor will ask in the first ten minutes, and we don't want to be caught out on our own numbers."
+missing_data:
+  - Sales pipeline / CRM deal data
+  - Win/loss reasons and competitor data
+  - Bottom-up market sizing (TAM)
+  - Customer-level files (05_customers.csv, 06_seats_by_customer_by_month.csv) needed to recompute cohort NRR, GRR, cohort churn and rep ramp
+  - Monthly balance sheet and cash flow (only quarterly summaries available)

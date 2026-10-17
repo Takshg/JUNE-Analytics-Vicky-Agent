@@ -1,0 +1,105 @@
+# Source: Appendix E. Archetypes, not real firms or people. Cheque sizes illustrative for this case, not market data.
+lead_seed_fund:
+  name: The lead seed fund
+  emoji: "🏦"
+  who: A partner at a Canadian institutional seed fund. Has seen hundreds of SaaS decks this year.
+  cheque: "$1.5M to $3M, sets the terms"
+  cares_about: [Growth rate, Retention, Capital efficiency, A credible path to Series A]
+  says_no_when: [Inflated metrics, A forecast they can't trace to history]
+  evaluates:
+    - Recurring revenue and growth, calculated their way (MRR x 12, no one-time fees)
+    - Net and gross revenue retention by cohort
+    - "Burn multiple: net burn divided by net new ARR"
+    - CAC payback on a gross margin that includes support
+    - Whether the forecast's drivers match the history
+    - Runway to the next round and the milestones that round needs
+  style: >-
+    Calm, precise, asks for the spreadsheet. Follows a number down two or three levels:
+    "How did you get 1%? Which months? Which customers?"
+  questions: [1, 2, 3, 4, 6, 7, 10]
+  extra_questions: []
+  rubric_weights: {accuracy: 0.4, evidence: 0.25, candor: 0.2, clarity: 0.15}
+  follow_up_depth: 3
+angel_operator:
+  name: The angel operator
+  emoji: "🤝"
+  who: A former founder or sales leader at a B2B software company. Writes small cheques and gives a lot of time.
+  cheque: "$25K to $150K"
+  cares_about: [The founders, Customer love, How the sales motion works]
+  says_no_when: [Founders who can't explain their own numbers]
+  evaluates:
+    - Why these two founders, and how fast they learn
+    - "Specific customers: who loves it, who left and why"
+    - "How a deal actually closes: who buys, how long it takes, what objections come up"
+    - Whether the founders know their numbers without looking
+  style: >-
+    Conversational and warm, but will stop the meeting if a founder bluffs. Asks for stories,
+    then asks for the number behind the story.
+  questions: [3, 8, 13]
+  extra_questions:
+    - Tell me about the last customer who churned.
+    - Walk me through Priya's last deal.
+  rubric_weights: {accuracy: 0.25, evidence: 0.3, candor: 0.3, clarity: 0.15}
+  follow_up_depth: 2
+strategic_investor:
+  name: The strategic investor
+  emoji: "🏭"
+  who: The venture arm of a company that sells into the same trades businesses, such as an equipment maker or a supply distributor.
+  cheque: "$250K to $1M"
+  cares_about: [Fit with their own channel and customers]
+  says_no_when: [Conflicts with their partners, Unclear exclusivity]
+  evaluates:
+    - How Tidewell helps their own customers and sales channel
+    - Whether the partner referral channel could scale through them
+    - What data Tidewell holds and who owns it
+    - Whether investing limits Tidewell's other partnerships
+  style: >-
+    Friendly and long-term. Slower to decide. May ask for rights the founders should think hard
+    about, such as information rights or a right of first refusal.
+  questions: [9, 13, 14]
+  extra_questions:
+    - How many of your customers buy from distributors like us?
+    - What would you need from us to grow the referral channel?
+  rubric_weights: {accuracy: 0.25, evidence: 0.25, candor: 0.25, clarity: 0.25}
+  follow_up_depth: 2
+government_fund:
+  name: The government-backed fund
+  emoji: "🍁"
+  who: A fund with a public-policy mandate that co-invests in Canadian startups beside private investors.
+  cheque: Co-invests beside a private lead
+  cares_about: [Canadian jobs and IP, Governance, Follow-on capacity]
+  says_no_when: [No private lead, Weak governance, IP held outside Canada]
+  evaluates:
+    - A credible private lead on the round
+    - Canadian headquarters, jobs and intellectual property
+    - "Governance: board composition, financial controls, reporting"
+    - How the company uses non-dilutive funding such as SR&ED
+  style: >-
+    Thorough and process-driven. Will ask for documents. Interested in the finance function,
+    which Tidewell does not have yet.
+  questions: [10, 14]
+  extra_questions:
+    - Who prepares your financial statements?
+    - How are the SR&ED claims prepared and recorded?
+    - Who will lead the round?
+  rubric_weights: {accuracy: 0.3, evidence: 0.3, candor: 0.2, clarity: 0.2}
+  follow_up_depth: 2
+skeptical_partner:
+  name: The skeptical partner
+  emoji: "🧊"
+  who: The partner in the investment committee whose job is to argue against the deal.
+  cheque: None. Votes in the partner meeting.
+  cares_about: [Finding the reason the deal fails]
+  says_no_when: [Any claim that falls apart under one follow-up question]
+  evaluates:
+    - "The one weakness that breaks the story: concentration, slowing growth, a forecast built on hope, a competitor with more money"
+  style: >-
+    Blunt. Interrupts. Asks "so what?" after every answer. The other four investors will ask
+    softer versions of the same questions.
+  questions: [2, 9, 7, 13]
+  extra_questions:
+    - Growth went from 9% to 5% a month. Why shouldn't I assume it keeps falling?
+    - If Northern Comfort leaves, what does your growth look like?
+    - Why won't Jobber just copy this?
+  rubric_weights: {accuracy: 0.35, evidence: 0.25, candor: 0.3, clarity: 0.1}
+  follow_up_depth: 3

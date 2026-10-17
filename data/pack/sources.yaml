@@ -1,0 +1,139 @@
+# Source: Appendix F. Every link checked by June Analytics on Oct 14, 2026. Link, don't copy.
+- id: yc_pitch
+  title: How to Pitch Your Startup
+  publisher: Y Combinator
+  url: https://www.ycombinator.com/library/6q-how-to-pitch-your-startup
+  about: Kevin Hale's Startup School talk on pitching clearly to investors.
+  topics: [pitching, clarity]
+- id: yc_seed_deck
+  title: How to build your seed round pitch deck
+  publisher: Y Combinator
+  url: https://www.ycombinator.com/library/2u-how-to-build-your-seed-round-pitch-deck
+  about: Aaron Harris's slide-by-slide guide to a seed deck.
+  topics: [deck, pitching]
+- id: sequoia_plan
+  title: Writing a Business Plan
+  publisher: Sequoia Capital
+  url: https://www.sequoiacap.com/article/writing-a-business-plan/
+  about: "The ten-section pitch outline: purpose, problem, solution, why now, market, competition, business model, team, financials, vision."
+  topics: [deck, market, tam]
+- id: buffer_deck
+  title: The slide deck we used to raise half a million dollars
+  publisher: Buffer
+  url: https://buffer.com/resources/the-slide-deck-we-used-to-raise-half-a-million-dollars/
+  about: Buffer's 2011 seed deck with the founders' commentary.
+  topics: [deck]
+- id: front_deck
+  title: Front Series C Deck
+  publisher: Front
+  url: https://front.com/blog/front-series-c-deck
+  about: Which slides got investors interested; a strong model for showing SaaS metrics (later stage than seed).
+  topics: [deck, metrics]
+- id: airbnb_deck
+  title: "Airbnb Pitch Deck: Teardown and Redesign"
+  publisher: Slidebean
+  url: https://slidebean.com/blog/airbnb-pitch-deck
+  about: The original 2009 Airbnb slides beside redesigned versions (third-party rehost).
+  topics: [deck]
+- id: bdc_template
+  title: Pitch deck template for start-ups
+  publisher: BDC
+  url: https://www.bdc.ca/en/articles-tools/entrepreneur-toolkit/templates-business-guides/pitch-deck-template
+  about: A free Canadian pitch deck template (short sign-up form).
+  topics: [deck, canada]
+- id: yc_seed_guide
+  title: A guide to seed fundraising
+  publisher: Y Combinator
+  url: https://www.ycombinator.com/library/4A-a-guide-to-seed-fundraising
+  about: Geoff Ralston's guide to why, when and how to raise a seed round.
+  topics: [fundraising, seed, valuation, runway]
+- id: pg_raise
+  title: How to Raise Money
+  publisher: Paul Graham
+  url: https://paulgraham.com/fr.html
+  about: How seed fundraising works in practice and how founders should run it.
+  topics: [fundraising, seed]
+- id: pg_default_alive
+  title: Default Alive or Default Dead?
+  publisher: Paul Graham
+  url: https://paulgraham.com/aord.html
+  about: Whether a startup reaches profitability on the money it has before it runs out.
+  topics: [runway, burn, cash]
+- id: a16z_metrics
+  title: 16 Startup Metrics
+  publisher: Andreessen Horowitz
+  url: https://a16z.com/16-startup-metrics/
+  about: The metrics investors check, such as bookings vs revenue, CAC and churn.
+  topics: [metrics, arr, cac, churn, gross_margin]
+- id: sacks_burn
+  title: The Burn Multiple
+  publisher: David Sacks
+  url: https://sacks.substack.com/p/the-burn-multiple-51a7e43cb200
+  about: Defines burn multiple as net burn divided by net new ARR.
+  topics: [burn, burn_multiple, efficiency]
+- id: bvp_cloud
+  title: 10 laws of cloud
+  publisher: Bessemer Venture Partners
+  url: https://www.bvp.com/atlas/10-laws-of-cloud
+  about: Rules for building and measuring cloud software businesses.
+  topics: [metrics, saas, nrr, gross_margin]
+- id: janz_100m
+  title: Five ways to build a $100 million business
+  publisher: Christoph Janz
+  url: https://christophjanz.blogspot.com/2014/10/five-ways-to-build-100-million-business.html
+  about: How contract size and customer count combine. Useful for an SMB business like Tidewell.
+  topics: [market, tam, smb]
+- id: bdc_pitch_vc
+  title: How to pitch your business to venture capital investors
+  publisher: BDC
+  url: https://www.bdc.ca/en/articles-tools/start-buy-business/start-business/how-pitch-your-business-venture-capital-investors
+  about: Tips for pitching Canadian VCs.
+  topics: [pitching, canada]
+- id: bdc_angels
+  title: How to find angel investors in Canada
+  publisher: BDC
+  url: https://www.bdc.ca/en/articles-tools/start-buy-business/start-business/angel-investors-how-find-them
+  about: Angel investing in Canada and the networks to contact.
+  topics: [angels, canada]
+- id: yc_safe
+  title: The SAFE
+  publisher: Y Combinator
+  url: https://www.ycombinator.com/documents
+  about: Post-money SAFE forms and user guide, including a Canadian version. Tidewell's two SAFEs use this structure.
+  topics: [safe, valuation, dilution, terms]
+- id: nvca_docs
+  title: Model Legal Documents
+  publisher: NVCA
+  url: https://nvca.org/model-legal-documents/
+  about: US model financing documents, useful for term definitions. Canadian deals use different forms.
+  topics: [terms]
+- id: carta_q1_2026
+  title: "State of Private Markets: Q1 2026"
+  publisher: Carta
+  url: https://carta.com/data/state-of-private-markets-q1-2026/
+  about: US venture funding volumes, valuations and dilution. US data; say so if used for a Canadian company.
+  topics: [market_data, dilution, valuation]
+- id: cvca_reports
+  title: CVCA market reports
+  publisher: CVCA
+  url: https://www.cvca.ca/research-insight/market-reports/
+  about: Canadian venture capital market overviews.
+  topics: [market_data, canada]
+- id: naco
+  title: NACO
+  publisher: National Angel Capital Organization
+  url: https://www.nacocanada.com/
+  about: Canada's industry association for angel investors.
+  topics: [angels, canada]
+- id: bdc_seed_fund
+  title: BDC Seed Venture Fund
+  publisher: BDC Capital
+  url: https://www.bdc.ca/en/bdc-capital/venture-capital/funds/seed-fund
+  about: An example of a government-backed seed fund that invests in Canadian startups.
+  topics: [government, canada]
+- id: cra_sred
+  title: SR&ED tax incentives
+  publisher: Canada Revenue Agency
+  url: https://www.canada.ca/en/revenue-agency/services/scientific-research-experimental-development-tax-incentive-program.html
+  about: The federal R&D tax credit program behind Tidewell's refunds.
+  topics: [sred, non_dilutive, government]
