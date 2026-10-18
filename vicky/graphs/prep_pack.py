@@ -15,6 +15,7 @@ from ..prompts import PACK_DRAFT, PACK_REVISE, RULES, vicky_system
 from ..tools import fact_sheet, scenario_facts
 
 MAX_REVISIONS = 2
+LONG_TIMEOUT = 90  # a full pack is one long generation (~25s per call on the free tier)
 
 
 class PackState(TypedDict, total=False):
@@ -44,7 +45,7 @@ def _draft(state: PackState):
     prompt = PACK_DRAFT.format(rules=RULES, claims=_claims_text(state["claims"]),
                                scenarios=_scenarios_text(state["scenarios"]), facts=fact_sheet(),
                                missing="; ".join(data.company()["missing_data"]))
-    text = get_llm(temperature=0.3).invoke([SystemMessage(vicky_system()), HumanMessage(prompt)]).content
+    text = get_llm(temperature=0.3, timeout=LONG_TIMEOUT).invoke([SystemMessage(vicky_system()), HumanMessage(prompt)]).content
     return {"draft": clean(text)}
 
 
@@ -55,14 +56,16 @@ def _audit(state: PackState):
 
 
 def _route(state: PackState):
-    if not state["audit"]["passed"] and state["revisions"] < MAX_REVISIONS:
+    log = state["audit_log"]
+    stuck = len(log) > 1 and auditor.same_issues(log[-1], log[-2])  # the last revision fixed nothing
+    if not state["audit"]["passed"] and state["revisions"] < MAX_REVISIONS and not stuck:
         return "revise"
     return END
 
 
 def _revise(state: PackState):
-    issues = "\n".join(f"- {i['type']}: '{i['text']}' in \"{i['sentence'][:200]}\" ({i['detail']})" for i in state["audit"]["issues"])
-    text = get_llm(temperature=0.1).invoke([SystemMessage(vicky_system()),
+    issues = auditor.revision_brief(state["audit"]["issues"])
+    text = get_llm(temperature=0.1, timeout=LONG_TIMEOUT).invoke([SystemMessage(vicky_system()),
                                             HumanMessage(PACK_REVISE.format(issues=issues, pack=state["draft"]))]).content
     return {"draft": clean(text), "revisions": state["revisions"] + 1}
 

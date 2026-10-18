@@ -13,3 +13,4 @@ notes/
 Catalyst Resources/
 
 .env
+.llm_cache.sqlite

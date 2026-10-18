@@ -7,6 +7,7 @@ import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 
 from vicky import claims, data, forecast, llm, metrics
+from vicky.glossary import CSS as GLOSSARY_CSS, glossify, glossify_sections
 from vicky.audit import audit
 
 st.set_page_config(page_title="Vicky · AI VC by June", page_icon="assets/june_logo.png", layout="wide")
@@ -28,7 +29,7 @@ st.markdown("""<style>
 .kpi .l{font-size:0.82rem;color:#555}
 .claim{border-left:4px solid;padding:6px 12px;margin-bottom:10px;background:#fafaf8;border-radius:4px}
 .small{font-size:0.82rem;color:#555}
-</style>""", unsafe_allow_html=True)
+""" + GLOSSARY_CSS + "</style>", unsafe_allow_html=True)
 
 
 def badge(prov: str) -> str:
@@ -38,7 +39,7 @@ def badge(prov: str) -> str:
 
 def kpi(key: str, label: str | None = None, sub: str = ""):
     m = metrics.get(key)
-    st.markdown(f'<div class="kpi"><div class="l">{label or m.label}{badge(m.provenance)}</div>'
+    st.markdown(f'<div class="kpi"><div class="l">{glossify(label or m.label)}{badge(m.provenance)}</div>'
                 f'<div class="v">{m.display()}</div><div class="small">{sub}</div></div>', unsafe_allow_html=True)
     with st.popover("Show calculation", width="stretch"):
         show_metric(m)
@@ -64,6 +65,59 @@ def render_audit(entries: list[dict], title="Audit notes"):
                             unsafe_allow_html=True)
         if len(entries) > 1:
             st.success("Issues found by the audit were sent back to Vicky and fixed before you saw this.")
+
+
+INTENT_LABEL = {
+    "explain_metric": ("📏 Explain a metric", "#1f7a4d", "#e3f4ea"),
+    "challenge_claim": ("🧾 Challenge a claim", "#9b1c1c", "#fbe4e4"),
+    "what_if": ("🧪 What-if scenario", "#8a5a00", "#fdf1d8"),
+    "concept": ("📖 Concept", "#3b4a9b", "#e6e9fa"),
+    "investor_prep": ("🎯 Investor prep", "#5b2a86", "#efe5f7"),
+    "missing_data": ("🕳️ Missing data", "#555", "#eee"),
+    "policy_boundary": ("🚧 Policy boundary", "#9b1c1c", "#fbe4e4"),
+    "general": ("💬 General", "#555", "#eee"),
+}
+BY_COLOR = {"code": ("#1f7a4d", "#e3f4ea"), "llm": ("#3b4a9b", "#e6e9fa")}
+
+
+def chip(text: str, fg: str, bg: str) -> str:
+    return f'<span class="badge" style="color:{fg};background:{bg};margin:0 4px 0 0">{text}</span>'
+
+
+def render_coach_header(meta: dict):
+    chips = [chip(*INTENT_LABEL.get(meta.get("intent"), INTENT_LABEL["general"]))]
+    if meta.get("policy"):
+        chips.append(chip(f"gate: {meta['policy']['rule'].replace('_', ' ')}", "#9b1c1c", "#fbe4e4"))
+    if meta.get("revised"):
+        chips.append(chip("revised after audit", "#8a5a00", "#fdf1d8"))
+    st.markdown(" ".join(chips), unsafe_allow_html=True)
+
+
+def render_coach_details(meta: dict):
+    if meta.get("decision_trace"):
+        with st.expander("🧭 How Vicky decided"):
+            for t in meta["decision_trace"]:
+                by = t["by"]
+                fg, bg = BY_COLOR.get(by, ("#8a5a00", "#fdf1d8"))  # fallbacks stand out
+                st.markdown(f"<span class='small'><b>{t['level']}</b></span> {chip(by, fg, bg)} {t['decision']}",
+                            unsafe_allow_html=True)
+            st.caption("Level 1 is a code-only policy check. Level 2 is the AI planner (keyword fallback if it fails). "
+                       "Level 3 is checked and run in code.")
+    if meta.get("reasoning"):
+        with st.expander("🧠 How Vicky reasoned"):
+            st.markdown(glossify("\n".join(f"{n}. {s}" for n, s in enumerate(meta["reasoning"], 1))),
+                        unsafe_allow_html=True)
+    if meta.get("evidence"):
+        with st.expander(f"🧰 Evidence ({len(meta['evidence'])} tool result{'s' if len(meta['evidence']) != 1 else ''})"):
+            for e in meta["evidence"]:
+                args = ", ".join(f"{k}={v!r}" for k, v in e["args"].items())
+                st.markdown(f"`{e['name']}({args})`" + ("" if e.get("ok", True) else " ⚠️ failed"))
+                st.code(e["preview"] + ("…" if len(e["preview"]) >= 600 else ""), language="json")
+    elif meta.get("tool_calls"):
+        st.caption("Tools used: " + ", ".join(f"`{t['name']}`" for t in meta["tool_calls"]))
+    if meta.get("timings"):
+        steps = " · ".join(f"{t['step']} {t['seconds']:.1f}s" for t in meta["timings"] if t["seconds"] >= 0.05)
+        st.caption(f"⏱️ {meta['seconds']:.1f}s total" + (f" ({steps})" if steps else ""))
 
 
 def need_llm() -> bool:
@@ -169,11 +223,13 @@ with tabs[1]:
                 "This check is deterministic: no AI involved, every figure traces to the data.")
     for c in cs:
         color = STATUS_COLOR[c["status"]]
+        seen = set()  # one card = one block: each term is explained once per card
+        g = {k: glossify(c[k], seen) for k in ("claim", "data_shows", "suggested_fix", "why_investors_care")}
         st.markdown(
-            f'<div class="claim" style="border-color:{color}"><b>“{c["claim"]}”</b>{badge("founder_claim")} '
+            f'<div class="claim" style="border-color:{color}"><b>“{g["claim"]}”</b>{badge("founder_claim")} '
             f'<span class="badge" style="color:#fff;background:{color}">{c["status"]}</span><br>'
-            f'<b>What the data shows:</b> {c["data_shows"]}<br><b>Say instead:</b> {c["suggested_fix"]}<br>'
-            f'<span class="small"><b>Why investors care:</b> {c["why_investors_care"]}</span></div>',
+            f'<b>What the data shows:</b> {g["data_shows"]}<br><b>Say instead:</b> {g["suggested_fix"]}<br>'
+            f'<span class="small"><b>Why investors care:</b> {g["why_investors_care"]}</span></div>',
             unsafe_allow_html=True)
         if c["evidence"]:
             with st.popover("Evidence"):
@@ -204,7 +260,7 @@ with tabs[2]:
         st.session_state.pack = prep_pack.deterministic()
     pack = st.session_state.get("pack")
     if pack:
-        st.markdown(pack["markdown"])
+        st.markdown(glossify_sections(pack["markdown"]), unsafe_allow_html=True)
         render_audit(pack["audit_log"])
         st.download_button("Download pack (.md)", pack["markdown"], file_name="tidewell_investor_prep_pack.md")
     elif not llm.configured():
@@ -213,7 +269,8 @@ with tabs[2]:
 # ---------------------------------------------------------------- 4. ask vicky
 with tabs[3]:
     st.subheader("Ask Vicky about your numbers")
-    st.caption("Vicky uses tools (metrics, claim check, scenarios, glossary, sources) and every answer is audited before you see it.")
+    st.caption("Vicky decides in levels (policy check → question type → tool plan), runs the tools in code, reasons step "
+               "by step, and every answer is audited before you see it.")
     if need_llm():
         st.session_state.setdefault("chat", [])
         examples = ["What's our real ARR and why isn't it $1.37M?", "Explain burn multiple like I'm an engineer",
@@ -226,11 +283,13 @@ with tabs[3]:
                 picked = ex
         for turn in st.session_state.chat:
             with st.chat_message(turn["role"], avatar="assets/june_logo.png" if turn["role"] == "assistant" else None):
-                st.markdown(turn["content"])
-                if turn.get("meta"):
-                    meta = turn["meta"]
-                    if meta["tool_calls"]:
-                        st.caption("Tools used: " + ", ".join(f"`{t['name']}`" for t in meta["tool_calls"]))
+                meta = turn.get("meta")
+                if meta:
+                    render_coach_header(meta)
+                st.markdown(glossify(turn["content"]) if turn["role"] == "assistant" else turn["content"],
+                            unsafe_allow_html=turn["role"] == "assistant")
+                if meta:
+                    render_coach_details(meta)
                     render_audit([{**a, "round": i + 1} for i, a in enumerate(meta["audit_history"])], "Answer audit")
         q = st.chat_input("Ask about ARR, churn, runway, CAC, SAFEs…") or picked
         if q:
@@ -239,7 +298,7 @@ with tabs[3]:
             history = []
             for t in st.session_state.chat[:-1][-8:]:
                 history.append(HumanMessage(t["content"]) if t["role"] == "user" else AIMessage(t["content"]))
-            with st.spinner("Vicky is checking the numbers…"):
+            with st.spinner("Vicky is checking the numbers…", show_time=True):
                 try:
                     res = coach.ask(history, q)
                     st.session_state.chat.append({"role": "assistant", "content": res["answer"], "meta": res})
@@ -289,7 +348,7 @@ with tabs[4]:
             for t in state["transcript"]:
                 if t["role"] == "investor":
                     with st.chat_message("investor", avatar=p["emoji"]):
-                        st.markdown(t["text"])
+                        st.markdown(glossify(t["text"]), unsafe_allow_html=True)
                 else:
                     with st.chat_message("founder", avatar="🧑‍💻"):
                         st.markdown(t["text"])
@@ -306,10 +365,12 @@ with tabs[4]:
                                 st.success(f"Fact check: {fc['summary']}")
                             else:
                                 st.info("Fact check: no figures stated. Investors expect a number.")
+                            seen = set()
                             if turn["went_well"]:
-                                st.markdown(f"**Went well:** {turn['went_well']}")
-                            st.markdown(f"**Improve:** {turn['improve']}")
-                            st.markdown(f"**A stronger answer:** {turn['stronger_answer']}")
+                                st.markdown(f"**Went well:** {glossify(turn['went_well'], seen)}", unsafe_allow_html=True)
+                            st.markdown(f"**Improve:** {glossify(turn['improve'], seen)}", unsafe_allow_html=True)
+                            st.markdown(f"**A stronger answer:** {glossify(turn['stronger_answer'], seen)}",
+                                        unsafe_allow_html=True)
                             sa = audit(turn["stronger_answer"])
                             if not sa.passed:
                                 st.caption("⚠️ The suggested answer contains a figure the audit couldn't verify: "

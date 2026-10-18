@@ -4,7 +4,8 @@ from .tools import fact_sheet
 
 RULES = """Rules you must follow:
 1. Every number you state must come from the FACT SHEET or a tool result. Never estimate or invent a figure.
-   If the data isn't there, say it is missing and what would fill the gap.
+   Do not calculate new figures yourself (products, annualised rates, targets, differences): quote the
+   figures as listed. If the data isn't there, say it is missing and what would fill the gap.
 2. Label figures as historical (closed months), forecast (the founders' plan or a scenario), founder claim, or
    reported in the data pack.
 3. Explain finance terms in plain language the first time they appear. Founders are smart but not accountants.
@@ -114,9 +115,64 @@ MISSING DATA: {missing}"""
 PACK_REVISE = """An independent audit of your investor-prep pack found these problems:
 {issues}
 
-Rewrite the pack fixing every problem. Remove or correct any figure that doesn't come from the fact sheet,
-attribute founder claims ("the deck says ..."), remove valuation language, and drop or source any benchmark.
-Keep the same sections. Output only the revised Markdown.
+Rewrite the pack applying each FIX exactly. Change nothing else. Keep the same sections.
+Output only the revised Markdown.
 
 PACK:
 {pack}"""
+
+
+PLANNER = """You are the planner for Vicky, an AI pitch coach for Tidewell's founders. Do NOT answer the question.
+Classify it and choose the tools whose results the answer will need.
+
+INTENTS:
+{intents}
+
+TOOLS (name(args): what it returns):
+{tools}
+
+Valid metric keys: {metric_keys}
+Valid deck claim ids: arr, growth, gross_margin, churn, nrr, cac, tam, ncg, runway, all
+Likely investor questions (id: question):
+{questions}
+
+Recent conversation (for follow-ups like "and if it's 3%?"):
+{history}
+
+Founder's question: {question}
+
+Rules: pick 1 to 3 tools. Percentages are fractions (2% churn = 0.02). seed_month is "YYYY-MM"; the target
+close is 2027-01. Only set run_scenario arguments the founder actually changed.
+
+Reply with ONLY a JSON object, no prose before or after:
+{{"intent": "<one intent>", "why": "<one sentence>", "tools": [{{"name": "<tool>", "args": {{...}}}}]}}"""
+
+
+ANSWER = """The founder asked: {question}
+
+Question type: {intent}. How to answer this type: {playbook}
+{policy}
+EVIDENCE (tool results computed in code; the only numbers you may use besides the fact sheet):
+{evidence}
+
+Think it through, then answer. Reply in exactly this format:
+REASONING:
+1. <what the question really needs>
+2. <which evidence answers it, with the key figures>
+3. <what an investor will conclude, and why>
+(3 to 5 numbered steps, one line each)
+ANSWER:
+<the answer to the founder, under 250 words, in Markdown>"""
+
+
+CHAT_REVISE = """[Internal audit, not from the founder] Your draft failed an independent check:
+{issues}
+
+Rewrite it applying each FIX exactly. Use only fact-sheet or evidence numbers.
+Keep exactly the same format (REASONING: numbered steps, then ANSWER:).
+
+EVIDENCE:
+{evidence}
+
+DRAFT:
+{draft}"""

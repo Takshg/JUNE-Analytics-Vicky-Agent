@@ -15,11 +15,9 @@ ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
-DEFAULT_MODEL =  "nvidia/nemotron-3.5-lightning:free"
+DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"  # 0.5s simple reply vs ~30s queue for 3.5-lightning
 # OpenRouter tries these in order server-side if the primary model is rate limited or down
-DEFAULT_FALLBACKS = ""
-
-# "nvidia/nemotron-3-super-120b-a12b:free,google/gemma-4-26b-a4b-it:free"
+DEFAULT_FALLBACKS = "xingchen-agi/xing4.0-29b-a4b:free"
 
 
 def clean(text: str) -> str:
@@ -54,7 +52,8 @@ def model_name() -> str:
 
 
 @lru_cache
-def get_llm(temperature: float = 0.3) -> ChatOpenAI:
+def get_llm(temperature: float = 0.3, timeout: int = 30) -> ChatOpenAI:
+    """timeout is per call; raise it only for long documents (the prep pack)."""
     if os.getenv("LLM_CACHE", "1") == "1":
         set_llm_cache(SQLiteCache(database_path=str(ROOT / ".llm_cache.sqlite")))
     base_url = os.getenv("LLM_BASE_URL", DEFAULT_BASE_URL)
@@ -63,13 +62,16 @@ def get_llm(temperature: float = 0.3) -> ChatOpenAI:
         fallbacks = [m for m in os.getenv("LLM_FALLBACK_MODELS", DEFAULT_FALLBACKS).split(",") if m]
         if fallbacks:
             extra_body["models"] = [model_name(), *fallbacks]
+        # Free models are reasoning models; hidden thinking added ~70s per call in testing. Off unless asked for.
+        if os.getenv("LLM_REASONING", "off").lower() != "on":
+            extra_body["reasoning"] = {"enabled": False}
     return ChatOpenAI(
         base_url=base_url,
         api_key=os.getenv("LLM_API_KEY") or os.getenv("OPENROUTER_API_KEY"),
         model=model_name(),
         temperature=temperature,
-        max_retries=2,
-        timeout=90,
+        max_retries=1,  # fail fast: a stuck free-tier call used to hang for up to ~4.5 minutes
+        timeout=timeout,
         extra_body=extra_body or None,
         default_headers={"HTTP-Referer": "https://juneanalytics.ai", "X-Title": "Vicky AI Pitch Coach"},
     )

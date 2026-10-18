@@ -1,0 +1,3 @@
+[theme]
+# Forced light: June's logo is black on transparent and the KPI / claim cards use light backgrounds (decision C29)
+base = "light"

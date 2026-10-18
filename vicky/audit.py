@@ -177,6 +177,29 @@ def audit(text: str, extra_known: list | dict | None = None) -> AuditReport:
     return AuditReport(passed=not issues, issues=issues, numbers_checked=checked, numbers_verified=verified)
 
 
+# What the reviser must do for each issue type. Without this, models "fix" an unsupported figure by
+# keeping it and adding "the deck states", which misattributes it to the founders.
+FIX_ACTIONS = {
+    "unsupported_number": "DELETE this figure. Do not restate, reword or attribute it to anyone, and do not "
+                          "calculate a replacement. Rewrite the sentence without it, or delete the sentence.",
+    "claim_as_fact": "Attribute it to the founders, e.g. \"the deck says ...\", and give the figure the data shows.",
+    "valuation_or_advice": "Remove the valuation or advice. You may explain how the mechanism works instead.",
+    "unsourced_benchmark": "Name the public source (publisher) for the benchmark, or delete the benchmark.",
+}
+
+
+def revision_brief(issues: list[dict]) -> str:
+    """Issues formatted for a revise prompt, each with the action that fixes it."""
+    return "\n".join(f"- {i['type']}: '{i['text']}' in \"{i['sentence'][:200]}\"\n  FIX: {FIX_ACTIONS[i['type']]}"
+                     for i in issues)
+
+
+def same_issues(a: dict, b: dict) -> bool:
+    """True if two audit results flag the same problems (a revision made no progress)."""
+    key = lambda r: sorted((i["type"], i["text"]) for i in r["issues"])
+    return key(a) == key(b)
+
+
 def _has_source(sentence: str) -> bool:
     low = sentence.lower()
     if "http" in low or "appendix" in low:
