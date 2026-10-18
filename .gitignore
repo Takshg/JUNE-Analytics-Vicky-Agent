@@ -13,4 +13,9 @@ notes/
 Catalyst Resources/
 
 .env
+
+# OS / local files
+.DS_Store
+Thumbs.db
 .llm_cache.sqlite
+.streamlit/secrets.toml

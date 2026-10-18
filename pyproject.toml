@@ -12,6 +12,7 @@ dependencies = [
     "python-dotenv>=1.2.4",
     "pyyaml>=6.0.3",
     "streamlit>=1.66.0",
+    "streamlit-mic-recorder>=0.0.8",
 ]
 
 [dependency-groups]
