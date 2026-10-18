@@ -4,7 +4,7 @@ import re
 import pytest
 
 from vicky import data
-from vicky.glossary import SKIP, _names, glossify, glossify_sections
+from vicky.glossary import SKIP, _names, escape_dollars, glossify, glossify_sections
 
 
 def wrapped(html: str) -> list[str]:
@@ -81,3 +81,8 @@ def test_sections_reset_first_mention():
 
 def test_empty():
     assert glossify("") == "" and glossify_sections("") == ""
+
+
+def test_dollars_escaped_outside_code():
+    assert escape_dollars("ARR $1.29M, burn $58K, `cost $5`") == "ARR &#36;1.29M, burn &#36;58K, `cost $5`"
+    assert "$" not in glossify("Burn is $58K and cash is $483K.")

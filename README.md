@@ -42,8 +42,9 @@ works as a drop-in backup (see `.env.example`).
 ## 3-minute demo script
 1. **Numbers**: ARR $1.29M (not $1.37M), with the calculation popover. Chart: plan vs historical drivers.
 2. **Deck claim check**: 9 claims, 7 need fixing. Every figure has evidence.
-3. **Pitch simulator → Skeptical partner**: answer "churn is around 1%". The fact check catches it, accuracy is
-   capped, and the investor pushes back. Then answer with real numbers and the score improves.
+3. **Pitch simulator with a deck**: upload `assets/sample_deck/tidewell_deck_draft.pdf`, pick slide 4 and give the
+   correct ARR ($1.29M). The investor sees the slide too, and the feedback flags that the slide still says $1.37M.
+   `tidewell_deck_corrected.pdf` is the fixed version; regenerate both with `uv run python scripts/make_sample_deck.py`.
 4. **Ask Vicky**: "What valuation should we raise at?" She declines and explains how the SAFE caps work.
    "Why will we beat Jobber?" She says there's no win/loss data and how to get it.
 5. **Scenario lab**: slip the round to April. Cash runs out in March 2027. Toggle "hold spending" to fix it.

@@ -7,7 +7,7 @@ import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 
 from vicky import claims, data, forecast, llm, metrics
-from vicky.glossary import CSS as GLOSSARY_CSS, glossify, glossify_sections
+from vicky.glossary import CSS as GLOSSARY_CSS, escape_dollars, glossify, glossify_sections
 from vicky.audit import audit
 
 st.set_page_config(page_title="Vicky · AI VC by June", page_icon="assets/june_logo.png", layout="wide")
@@ -120,6 +120,93 @@ def render_coach_details(meta: dict):
         st.caption(f"⏱️ {meta['seconds']:.1f}s total" + (f" ({steps})" if steps else ""))
 
 
+def deck_uploader() -> dict | None:
+    """Optional PDF deck for the pitch simulator; parsed once per file and kept in session state."""
+    from vicky import deck as decks
+    f = st.file_uploader("Your pitch deck (PDF, optional)", type=["pdf"],
+                         help="Export from PowerPoint, Keynote or Google Slides as PDF. During the meeting you pick "
+                              "the slide you're pointing at, and the investor sees it with your answer.")
+    if not f:
+        st.session_state.pop("deck_upload", None)
+        return None
+    cached = st.session_state.get("deck_upload")
+    if not cached or cached["file_id"] != f.file_id:
+        try:
+            cached = {"file_id": f.file_id, "deck": decks.load(f.getvalue(), f.name), "error": None}
+        except decks.DeckError as e:
+            cached = {"file_id": f.file_id, "deck": None, "error": str(e)}
+        st.session_state.deck_upload = cached
+    if cached["error"]:
+        st.error(cached["error"])
+        return None
+    d = cached["deck"]
+    blank = [s["n"] for s in d["slides"] if not s["text"]]
+    st.caption(f"📎 {d['name']}: {len(d['slides'])} slides loaded."
+               + (f" Only the first {len(d['slides'])} are used." if d["truncated"] else "")
+               + (f" Slides {', '.join(map(str, blank))} have no text (image only), so the investor can't read them."
+                  if blank else ""))
+    return d
+
+
+def slide_viewer(deck: dict) -> int | None:
+    """Slide picker + image. Returns the slide the founder is pointing at (None = no slide)."""
+    options = [None] + [s["n"] for s in deck["slides"]]
+    slide = st.selectbox("Slide you're referencing", options, key="pitch_slide",
+                         format_func=lambda n: "No slide" if n is None else f"{n} · {deck['slides'][n - 1]['title']}")
+    if slide:
+        st.image(deck["images"][slide - 1], width="stretch")
+        st.caption("The investor sees this slide's text with your next answer, and code checks it against the data.")
+    else:
+        st.caption("Pick a slide to point at it in your next answer.")
+    return slide
+
+
+def render_pitch_feedback(turn: dict):
+    with st.expander(f"Feedback: {turn['weighted']:.1f}/5 (weighted for this investor)", expanded=False):
+        sc = st.columns(4)
+        for col, (d, s) in zip(sc, turn["scores"].items()):
+            col.metric(d.capitalize(), f"{s}/5")
+        fc = turn["fact_check"]
+        if fc["issues"]:
+            st.error(escape_dollars("Fact check: " + "; ".join(f"**{i['text']}**: {i['detail']}" for i in fc["issues"])))
+        elif fc["numbers_checked"]:
+            st.success(f"Fact check: {fc['summary']}")
+        else:
+            st.info("Fact check: no figures stated. Investors expect a number.")
+        slide = turn.get("slide")
+        if slide:
+            for c in slide["contradictions"]:
+                st.warning(escape_dollars(f"Slide {slide['n']} vs your answer: {c}"))
+            if slide["check"]["issues"]:
+                st.warning(escape_dollars(f"Slide {slide['n']} check: " + "; ".join(
+                    f"**{i['text']}**: {i['detail']}" for i in slide["check"]["issues"])))
+            elif not slide["contradictions"]:
+                st.caption(f"Slide {slide['n']}: {slide['check']['summary']}")
+        seen = set()
+        if turn["went_well"]:
+            st.markdown(f"**Went well:** {glossify(turn['went_well'], seen)}", unsafe_allow_html=True)
+        st.markdown(f"**Improve:** {glossify(turn['improve'], seen)}", unsafe_allow_html=True)
+        st.markdown(f"**A stronger answer:** {glossify(turn['stronger_answer'], seen)}", unsafe_allow_html=True)
+        sa = audit(turn["stronger_answer"])
+        if not sa.passed:
+            st.caption("⚠️ The suggested answer contains a figure the audit couldn't verify: "
+                       + ", ".join(i["text"] for i in sa.issues))
+
+
+def tidy(text: str) -> str:
+    """Collapse stray whitespace from copy-paste (it also makes identical answers hit the LLM cache)."""
+    return " ".join(text.split())
+
+
+def llm_error(e: Exception) -> str:
+    text = str(e)
+    if "free-models-per-day" in text or "RateLimit" in type(e).__name__ or "429" in text:
+        return ("⚠️ The AI model's free daily quota is used up (or it is rate-limited), so this answer wasn't "
+                "scored. Nothing was lost: send it again later, or add credits or a backup key in `.env`. "
+                "Features without AI keep working.")
+    return f"⚠️ The AI call failed ({type(e).__name__}): {text[:300]}. Nothing was lost; try sending it again."
+
+
 def need_llm() -> bool:
     if llm.configured():
         return True
@@ -152,7 +239,8 @@ st.caption("Analyze the numbers → prepare the founder → simulate the pitch. 
            "the AI explains them, and an independent audit checks every figure it writes.")
 
 tabs = st.tabs(["📊 Numbers", "🧾 Deck claim check", "📋 Investor prep pack", "💬 Ask Vicky",
-                "🎤 Pitch simulator", "🧪 Scenario lab"])
+                "🎤 Pitch simulator", "🧪 Scenario lab"],
+               key="main_tab", on_change="rerun")  # tracked, so a button or upload doesn't jump back to Numbers
 
 # ---------------------------------------------------------------- 1. dashboard
 with tabs[0]:
@@ -286,12 +374,12 @@ with tabs[3]:
                 meta = turn.get("meta")
                 if meta:
                     render_coach_header(meta)
-                st.markdown(glossify(turn["content"]) if turn["role"] == "assistant" else turn["content"],
+                st.markdown(glossify(turn["content"]) if turn["role"] == "assistant" else escape_dollars(turn["content"]),
                             unsafe_allow_html=turn["role"] == "assistant")
                 if meta:
                     render_coach_details(meta)
                     render_audit([{**a, "round": i + 1} for i, a in enumerate(meta["audit_history"])], "Answer audit")
-        q = st.chat_input("Ask about ARR, churn, runway, CAC, SAFEs…") or picked
+        q = tidy(st.chat_input("Ask about ARR, churn, runway, CAC, SAFEs…") or picked or "")
         if q:
             from vicky.graphs import coach
             st.session_state.chat.append({"role": "user", "content": q})
@@ -303,7 +391,7 @@ with tabs[3]:
                     res = coach.ask(history, q)
                     st.session_state.chat.append({"role": "assistant", "content": res["answer"], "meta": res})
                 except Exception as e:
-                    st.session_state.chat.append({"role": "assistant", "content": f"⚠️ LLM call failed: {type(e).__name__}: {e}"})
+                    st.session_state.chat.append({"role": "assistant", "content": llm_error(e)})
             st.rerun()
         if st.session_state.chat and st.button("Clear chat"):
             st.session_state.chat = []
@@ -330,51 +418,46 @@ with tabs[4]:
                 choice = random.choice(list(profiles))
                 st.session_state.random_choice = choice
             choice = st.session_state.pop("random_choice", choice)
+            deck = deck_uploader()
+            if err := st.session_state.pop("pitch_error", None):
+                st.error(err)
             if st.button("Start meeting", type="primary"):
                 from vicky.graphs.pitch import PitchSession
                 with st.spinner("The investor is taking a seat…"):
                     try:
-                        st.session_state.pitch = PitchSession(choice, n_q)
+                        st.session_state.pitch = PitchSession(choice, n_q, deck=deck)
                         st.session_state.pitch_persona = choice
-                    except Exception as e:
-                        st.error(f"LLM call failed: {type(e).__name__}: {e}")
+                        st.session_state.pitch_deck = deck
+                        st.session_state.pop("pitch_slide", None)
+                    except Exception as e:  # shown after the rerun
+                        st.session_state.pitch_error = llm_error(e)
                 st.rerun()
             st.caption("Investor types are archetypes from the data pack (Appendix E), not real firms or people.")
         else:
             p = profiles[st.session_state.pitch_persona]
             state = sess.state
+            deck = st.session_state.get("pitch_deck")
             st.markdown(f"**In the room:** {p['emoji']} {p['name']}. {p['style']}")
-            turns = iter(state.get("turns", []))
-            for t in state["transcript"]:
-                if t["role"] == "investor":
-                    with st.chat_message("investor", avatar=p["emoji"]):
-                        st.markdown(glossify(t["text"]), unsafe_allow_html=True)
-                else:
-                    with st.chat_message("founder", avatar="🧑‍💻"):
-                        st.markdown(t["text"])
-                    turn = next(turns, None)
-                    if turn:
-                        with st.expander(f"Feedback: {turn['weighted']:.1f}/5 (weighted for this investor)", expanded=False):
-                            sc = st.columns(4)
-                            for col, (d, s) in zip(sc, turn["scores"].items()):
-                                col.metric(d.capitalize(), f"{s}/5")
-                            fc = turn["fact_check"]
-                            if fc["issues"]:
-                                st.error("Fact check: " + "; ".join(f"**{i['text']}**: {i['detail']}" for i in fc["issues"]))
-                            elif fc["numbers_checked"]:
-                                st.success(f"Fact check: {fc['summary']}")
-                            else:
-                                st.info("Fact check: no figures stated. Investors expect a number.")
-                            seen = set()
-                            if turn["went_well"]:
-                                st.markdown(f"**Went well:** {glossify(turn['went_well'], seen)}", unsafe_allow_html=True)
-                            st.markdown(f"**Improve:** {glossify(turn['improve'], seen)}", unsafe_allow_html=True)
-                            st.markdown(f"**A stronger answer:** {glossify(turn['stronger_answer'], seen)}",
-                                        unsafe_allow_html=True)
-                            sa = audit(turn["stronger_answer"])
-                            if not sa.passed:
-                                st.caption("⚠️ The suggested answer contains a figure the audit couldn't verify: "
-                                           + ", ".join(i["text"] for i in sa.issues))
+            chat_col, slide_col = st.columns([3, 2]) if deck else (st.container(), None)
+            if deck:
+                with slide_col:
+                    slide = slide_viewer(deck)
+            else:
+                slide = None
+            with chat_col:
+                turns = iter(state.get("turns", []))
+                for t in state["transcript"]:
+                    if t["role"] == "investor":
+                        with st.chat_message("investor", avatar=p["emoji"]):
+                            st.markdown(glossify(t["text"]), unsafe_allow_html=True)
+                    else:
+                        with st.chat_message("founder", avatar="🧑‍💻"):
+                            if t.get("slide") and deck:
+                                st.caption(f"📎 Pointing at slide {t['slide']}: {deck['slides'][t['slide'] - 1]['title']}")
+                            st.markdown(escape_dollars(t["text"]))
+                        turn = next(turns, None)
+                        if turn:
+                            render_pitch_feedback(turn)
             if sess.finished:
                 d = state["debrief"]
                 st.divider()
@@ -384,19 +467,28 @@ with tabs[4]:
                 for col, (k, val) in zip(cols[1:], d["averages"].items()):
                     col.metric(k.capitalize(), f"{val}/5")
                 st.markdown(f"Weakest dimension: **{d['weakest']}**. Figures flagged by the fact check: **{d['flagged_figures']}**.")
+                if d.get("slides_flagged"):
+                    st.markdown("**Slides to fix before the real meeting:**")
+                    for s in d["slides_flagged"]:
+                        st.markdown(escape_dollars(f"- **Slide {s['n']}: {s['title']}**: " + "; ".join(s["problems"])))
+                elif deck:
+                    st.success("No problems found on the slides you pointed at.")
                 st.caption("Each investor type weights the dimensions differently (Appendix E).")
             else:
-                ans = st.chat_input("Your answer…")
+                if err := st.session_state.pop("pitch_error", None):
+                    st.error(err)
+                ans = st.chat_input("Your answer…" if not slide else f"Your answer (pointing at slide {slide})…")
                 if ans:
                     with st.spinner("The investor is thinking…"):
                         try:
-                            sess.answer(ans)
-                        except Exception as e:
-                            st.error(f"LLM call failed: {type(e).__name__}: {e}")
+                            sess.answer(tidy(ans), slide=slide)
+                        except Exception as e:  # shown after the rerun; the answer can simply be sent again
+                            st.session_state.pitch_error = llm_error(e)
                     st.rerun()
             if st.button("End / new meeting"):
                 del st.session_state["pitch"]
                 st.rerun()
+
 
 # ---------------------------------------------------------------- 6. scenario lab
 with tabs[5]:

@@ -72,6 +72,8 @@ Founder's answer: {answer}
 Automated fact check of the founder's numbers (deterministic, trust this):
 {fact_check}
 
+{slide}
+
 Score each dimension 1-5:
 - accuracy: are the numbers right and calculated the way investors calculate them?
 - evidence: does the answer show how the number was calculated or point to data?

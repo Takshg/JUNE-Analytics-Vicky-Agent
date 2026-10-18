@@ -31,7 +31,7 @@ ADVICE_PATTERNS = [
 ]
 BENCHMARK_PATTERNS = [r"\bbenchmark", r"\btop[- ]quartile", r"\bbest[- ]in[- ]class", r"\bindustry (average|standard|norm)",
                       r"\btypical (seed |saas |b2b )?(company|startup|saas)", r"\bmedian (seed|saas|startup)"]
-ATTRIBUTION_WORDS = r"(deck|claim|claimed|says|said|plan|assum|forecast|target|founders?'|slide|states|quoted|weak answer|vs\.?|versus|not)"
+ATTRIBUTION_WORDS = r"(deck|claim|claimed|says|said|plan|assum|forecast|target|founders?'|slide|states|quoted|weak answer|vs\.?|versus|not|as booked|verbal|upside)"
 
 # founder claims that must not be stated as fact: (topic regex, value regex)
 FOUNDER_CLAIMS = [
@@ -42,6 +42,8 @@ FOUNDER_CLAIMS = [
     (r"runway", r"\b24\s?months"),
     (r"\btam\b|addressable", r"\$2\s?b"),
     (r"grow", r"\b10\s?%\s*(a month|month over month|mom|monthly)"),
+    (r"gross margin", r"\b92\s?%"),  # true only as booked; investors count support in cost of revenue
+    (r"northern comfort|\bncg\b", r"\b600[\s-]?seats?"),  # verbal, nothing signed
 ]
 
 

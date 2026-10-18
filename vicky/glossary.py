@@ -90,10 +90,27 @@ def tooltip(match: str, entry: str) -> str:
     return f'<span class="gl" tabindex="0">{match}<span class="gl-tip">{tip}</span></span>'
 
 
+def _no_math(segment: str) -> str:
+    return segment.replace("$", "&#36;")
+
+
+def escape_dollars(text: str) -> str:
+    """Stop Streamlit rendering text between two $ signs ("$1.29M ... $58K") as LaTeX. Code is left alone."""
+    if not text:
+        return text
+    out, pos = [], 0
+    for p in PROTECTED.finditer(text):
+        out += [_no_math(text[pos:p.start()]), p.group(0)]
+        pos = p.end()
+    out.append(_no_math(text[pos:]))
+    return "".join(out)
+
+
 def glossify(text: str, seen: set | None = None) -> str:
     """Add hover definitions to the first mention of each glossary term.
 
     Pass the same `seen` set across several calls to treat them as one block (e.g. one claim card).
+    Also escapes $ (see escape_dollars), so the result is safe to pass to st.markdown.
     """
     if not text:
         return text
@@ -109,10 +126,10 @@ def glossify(text: str, seen: set | None = None) -> str:
 
     out, pos = [], 0
     for p in PROTECTED.finditer(text):
-        out.append(pattern.sub(wrap, text[pos:p.start()]))
+        out.append(_no_math(pattern.sub(wrap, text[pos:p.start()])))
         out.append(p.group(0))
         pos = p.end()
-    out.append(pattern.sub(wrap, text[pos:]))
+    out.append(_no_math(pattern.sub(wrap, text[pos:])))
     return "".join(out)
 
 
