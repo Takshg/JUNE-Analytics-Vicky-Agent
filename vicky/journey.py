@@ -370,3 +370,84 @@ def readiness(best_scores: dict[str, float]) -> dict:
     pct = round(100 * earned / total)
     stage = 0 if not best_scores else 1 if pct < 50 else 2 if pct < 85 else 3
     return {"percent": pct, "ready": ready, "total": len(roadblocks()), "stage": stage}
+
+
+# --- Readiness in plain words (June: encourage, don't judge, so no score out of 100) ----------
+
+LEVELS = ["Getting ready", "Almost there", "Ready for the partner meeting"]
+
+
+def top3_done(best_scores: dict[str, float]) -> int:
+    """How many of the top three questions have been practised to 4+/5."""
+    return sum(best_scores.get(r.id, 0) >= 4 for r in top_three())
+
+
+def claims_to_fix() -> list[dict]:
+    """Deck claims that won't survive a first meeting as written (status Fix, or Remove or source)."""
+    from . import claims
+    return [c for c in claims.check_all() if c["status"] in (claims.FIX, claims.REMOVE)]
+
+
+def readiness_view(best_scores: dict[str, float]) -> dict:
+    """A level word, three check rows (strengths first) and a progress-bar width. No score is shown."""
+    done, fix, good = top3_done(best_scores), len(claims_to_fix()), len(strengths())
+    return {
+        "level": LEVELS[0 if done == 0 else 1 if done < 3 else 2],
+        "top3_done": done,
+        "rows": [
+            {"icon": "✓", "key": "Your business is strong: {n} things investors will like", "n": good},
+            {"icon": "◐" if fix else "✓", "key": "Your deck: {n} claims to fix", "n": fix},
+            {"icon": "○" if done == 0 else "◐" if done < 3 else "✓", "key": "Your answers: {n} of your top 3 practised",
+             "n": done},
+        ],
+        # starts at 40 so nobody begins at zero; the deck adds up to 20, the top-3 answers up to 40
+        "bar": round(40 + 20 * deck_health() + 40 * done / 3),
+    }
+
+
+# --- Your fix path: each fix unlocks the next (domino order) ------------------------------------
+
+FIX_STEPS = [
+    {"key": "survive", "title": "Survive the raise", "detail": "Hold spending until a term sheet is signed",
+     "roadblocks": ["cash_cliff"], "why": "Now you have time to fix the story"},
+    # practised through the churn question: the deck's "1% churn" is the claim investors test first
+    {"key": "deck", "title": "Fix the deck numbers", "detail": "Quote real ARR, churn and margin",
+     "roadblocks": ["churn"], "why": "Now investors trust your numbers"},
+    {"key": "growth", "title": "Explain the growth slowdown", "detail": "Show the evidence from customers",
+     "roadblocks": ["growth_slowing"], "why": "Now the $5M plan is believable"},
+    {"key": "forecast", "title": "Make the forecast honest",
+     "detail": "Cash from collections, no unfiled SR&ED, realistic pricing",
+     "roadblocks": ["deferred_revenue", "srred_guess", "annual_repricing"], "why": "Now the plan survives diligence"},
+    {"key": "meeting", "title": "Ready for the partner meeting", "detail": "Pitch the whole partnership",
+     "roadblocks": [], "why": ""},
+]
+
+
+def fix_path(best_scores: dict[str, float], n_claims_to_fix: int | None = None,
+             latest: str | None = None) -> list[dict]:
+    """The fix chain with a status per step: "done", "first" (the first unfinished step) or "next".
+
+    A step is done when all its roadblocks are practised to 4+/5; the deck step is also done when no deck claims
+    need fixing. The partner meeting is the destination: it becomes the first fix once everything before it is done.
+    latest is the roadblock id of the most recent 4+ answer this session, marked on its step if that step is done.
+    """
+    n_fix = len(claims_to_fix()) if n_claims_to_fix is None else n_claims_to_fix
+    steps, first_seen = [], False
+    for n, spec in enumerate(FIX_STEPS, 1):
+        ids = spec["roadblocks"]
+        done = bool(ids) and all(best_scores.get(i, 0) >= 4 for i in ids)
+        if spec["key"] == "deck" and n_fix == 0:
+            done = True
+        status = "done" if done else "next" if first_seen else "first"
+        first_seen = first_seen or status == "first"
+        if spec["key"] == "deck":
+            figure, prov = f"{n_fix} claims to fix", CLAIM
+        elif ids:
+            rb = roadblock(ids[0])
+            figure, prov = rb.figure, rb.figure_prov
+        else:
+            figure, prov = "3 partners", None
+        practice_rb = next((i for i in ids if best_scores.get(i, 0) < 4), ids[0] if ids else None)
+        steps.append({**spec, "n": n, "status": status, "figure": figure, "prov": prov, "practice_rb": practice_rb,
+                      "latest": done and latest in ids})
+    return steps

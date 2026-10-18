@@ -59,23 +59,61 @@ I don't have that data yet. We'll start tracking it in a CRM this quarter and sh
 
 ---
 
-## Optional: show the investor catching a bad answer
+## Bad answers: show the investor catching mistakes
 
-Paste one of these instead to show the fact check capping accuracy and the investor pushing back.
+Paste one of these instead of the good answer. Each was tested against the app's fact check. When the check flags
+a figure, **accuracy is capped at 2/5** whatever the AI thinks, the **Feedback** shows the fact-check error, and the
+investor usually pushes back with a follow-up. Point at the slide shown.
 
-**Slide 4:**
-```
-Our ARR is $1.37M.
-```
+### 1. Repeating the deck's inflated claims (flagged: "founder claim stated as fact")
 
-**Slide 4:**
-```
-We're growing 10% month over month.
-```
+| Investor asks about | Slide | Paste this |
+|---|---|---|
+| ARR | 4 | `Our ARR is $1.37M.` |
+| Growth | 4 | `We're growing 10% month over month.` |
+| Churn / NRR | 6 | `Churn is around 1% a month and net revenue retention is above 110%.` |
+| Gross margin | 5 | `Our gross margin is 92%.` |
+| CAC / payback | 5 | `Our CAC is $970 and we earn it back in under 3 months.` |
+| Northern Comfort | 8 | `Northern Comfort Group is expanding to 600 seats next year, so concentration isn't a risk.` |
+| Runway / the $4M | 11 | `$4M gives us 24 months of runway and gets us to $5M ARR.` |
+| TAM | 7 | `It's a $2B total addressable market in North America.` |
 
-**Slide 6:**
-```
-Churn is around 1% a month and net revenue retention is above 110%.
-```
+### 2. Making up a number (flagged: "figure doesn't tie to the data")
+
+| Investor asks about | Slide | Paste this |
+|---|---|---|
+| ARR | 4 | `We have about $2.5M in ARR.` |
+
+### 3. Quoting a benchmark with no source (flagged: "benchmarks must name a public source")
+
+| Investor asks about | Slide | Paste this |
+|---|---|---|
+| Churn | 6 | `Our churn is better than the industry average for SaaS.` |
+| Burn / efficiency | 11 | `Our burn multiple is best-in-class.` |
+
+### 4. Talking valuation (flagged: unsupported figure and valuation language)
+
+| Investor asks about | Slide | Paste this |
+|---|---|---|
+| The raise | 11 | `We're valued at $20M, so this round is a bargain for you.` |
+
+### 5. Bluffing with no numbers (no figure to check, so Feedback says "Investors expect a number")
+
+These aren't caught by the fact check. The AI evaluator scores them low on evidence and candour, and the investor
+asks for the number.
+
+| Investor asks about | Slide | Paste this |
+|---|---|---|
+| Growth | No slide | `Growth is strong and we're confident it will keep going. Customers love us.` |
+| Churn | No slide | `Churn won't be a problem. Our customers love the product.` |
+| Any number | No slide | `Honestly, we're growing fast. I'd have to check the exact number.` |
+
+**Tips**
+- **Don't add "it's on the slide" or "the deck says".** The fact check treats those words as attribution (the
+  founder is quoting the deck), so the inflated figure isn't flagged.
+- **The lead seed fund asks up to 2 follow-ups**, and bad answers trigger them, so a run of bad answers makes the
+  meeting longer. Mix one bad answer with good ones for a short demo.
+- **A strong demo arc:** paste a bad answer (accuracy capped, investor pushes back), then paste the good answer to
+  the follow-up and watch the score recover.
 
 **What to point out:** the correct answers given on the *draft* deck trigger "Slide N vs your answer" warnings in **Feedback**, because the slide still shows the old claim. The debrief then lists **Slides to fix before the real meeting**. To show a clean run, upload `tidewell_deck_corrected.pdf` instead.

@@ -105,6 +105,31 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{border-color:{BORDER} !importa
 .ready .eyebrow {{color:rgba(255,255,255,.7)}}
 .ready .big {{font-family:'Outfit',ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:3.6rem;line-height:1;margin:14px 0 6px}}
 .ready .big span {{font-size:1.4rem;opacity:.6}}
+.ready .level {{font-family:'Outfit',ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:2rem;line-height:1.1;margin:12px 0 10px}}
+.ready .chk {{display:flex;gap:10px;font-size:.92rem;margin:5px 0;opacity:.92}}
+.ready .chk .ic {{width:1.1em;flex:none;color:#b9a8ff;font-weight:700}}
+/* your fix path: a chain of tiles where each fix unlocks the next */
+.fixpath {{list-style:none;margin:6px 0 4px;padding:0;display:flex;flex-wrap:wrap;gap:6px 0;align-items:stretch}}
+.fixpath li {{display:flex;align-items:stretch}}
+.fp-tile {{width:178px;border-radius:10px;padding:12px 13px;background:{STONE};color:{MUTED};border:2px solid transparent;
+  display:flex;flex-direction:column;gap:5px}}
+.fp-tile .fp-n {{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}}
+.fp-tile .fp-t {{font-weight:700;font-size:.95rem;line-height:1.25;color:inherit}}
+.fp-tile .fp-d {{font-size:.78rem;line-height:1.3}}
+.fp-tile .fp-f {{font-family:'Outfit',ui-sans-serif,sans-serif;font-weight:700;font-size:1.05rem;margin-top:auto}}
+.fp-tile .fp-s {{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}}
+.fp-tile.first {{background:{LAVENDER};border-color:{PURPLE};color:{INK}}}
+.fp-tile.first .fp-s {{color:{PURPLE}}}
+.fp-tile.done {{background:{INK};color:#fff}}
+.fp-tile.fresh {{animation:fpfade .2s ease-out}}
+@keyframes fpfade {{from {{opacity:.35}} to {{opacity:1}}}}
+.fp-pill {{display:inline-block;background:{PURPLE};color:#fff;border-radius:10px;padding:1px 8px;font-size:.66rem;
+  font-weight:700;width:fit-content}}
+.fp-link {{width:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px;
+  text-align:center;color:{MUTED}}}
+.fp-link .fp-arrow {{font-size:1.5rem;line-height:1}}
+.fp-link.on {{color:{PURPLE}}}
+.fp-link .fp-why {{font-size:.7rem;line-height:1.25}}
 .bar {{height:6px;border-radius:6px;background:rgba(255,255,255,.15);margin-top:16px}}
 .bar > div {{height:100%;border-radius:6px;background:{PURPLE}}}
 .vicky {{display:flex;gap:18px;align-items:center;background:{LAVENDER};border-radius:10px;padding:20px 24px;margin:2px 0 8px}}
@@ -164,7 +189,10 @@ img.char.talking{{animation:hop .45s ease-in-out 4}}
 .footer-line{{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.96);border-top:1px solid {BORDER};
   padding:9px 24px 9px 0;text-align:center;font-size:.75rem;color:{MUTED}}}
 .block-container{{padding-bottom:70px}}
-@media (max-width: 760px) {{ .parrow{{display:none}} .ready .big{{font-size:2.8rem}} }}
+@media (max-width: 760px) {{ .parrow{{display:none}} .ready .big{{font-size:2.8rem}}
+  .fixpath{{flex-direction:column}} .fixpath li{{flex-direction:column;align-items:flex-start}}
+  .fp-tile{{width:100%}} .fp-link{{width:100%;flex-direction:row;gap:8px;justify-content:flex-start;padding:4px 0 4px 18px}}
+  .fp-link .fp-arrow{{transform:rotate(90deg)}} }}
 </style>""", unsafe_allow_html=True)
 
 
@@ -382,6 +410,8 @@ def record(rid: str | None, score: float):
     if rid:
         b = best_scores()
         b[rid] = max(score, b.get(rid, 0))
+        if score >= 4:
+            st.session_state.latest_fix = rid  # the fix path marks this step "Latest fix"
 
 
 def feedback(turn: dict, previous: float | None = None, show_strong: bool = True):
@@ -423,13 +453,12 @@ with st.sidebar:
 <div class="r">{T("AI VC · seed meeting prep")}</div></div></div>""", unsafe_allow_html=True)
     st.toggle("🇨🇦 Français", key="lang_fr", help="Canada has two official languages. Vicky's messages, investor "
               "questions, AI feedback and read-aloud switch to Canadian French. Numbers stay exactly as computed.")
-    rs = journey.readiness_score(best_scores())
-    r = journey.readiness(best_scores())
+    rv = journey.readiness_view(best_scores())
     st.markdown(f'<div class="eyebrow" style="margin-top:18px">{T("Readiness")}</div>'
-                f'<div class="num" style="font-size:1.6rem">{rs["score"]}<span class="small">/100</span></div>',
+                f'<div class="num" style="font-size:1.15rem;font-weight:700">{esc(T(rv["level"]))}</div>',
                 unsafe_allow_html=True)
-    st.progress(rs["score"] / 100)
-    st.caption(T("{ready} of {total} roadblocks you can answer well", ready=r["ready"], total=r["total"]))
+    st.progress(rv["bar"] / 100)
+    st.caption(T("Your answers: {n} of your top 3 practised", n=rv["top3_done"]))
     if SEO_URL:
         st.link_button(T("📖 Take the free 10-Minute Test"), SEO_URL, width="stretch")
     with st.expander(T("🧠 Learn the lingo")):
@@ -522,34 +551,61 @@ def snapshot_card(title: str, summary: str, rows: list[dict], key: str, detail_r
             detail(title, summary, detail_rows or rows, practise)
 
 
+STATUS_LABEL = {"done": "Fixed", "first": "Start here", "next": "Up next"}
+STATUS_ARIA = {"done": "Fixed", "first": "First fix", "next": "Up next"}
+
+
+def fix_path_html(steps: list[dict]) -> str:
+    """The domino chain: an ordered list (read in order by screen readers); status is always written, not only
+    coloured. Arrows turn purple once the tile before them is done."""
+    total, items = len(steps), []
+    for s_ in steps:
+        status = s_["status"]
+        fresh = " fresh" if s_["latest"] and not reduce_motion() else ""
+        badge_html = badge(s_["prov"]) if s_["prov"] else ""
+        check = "✓ " if status == "done" else ""
+        pill = f'<span class="fp-pill">{T("Latest fix")}</span>' if s_["latest"] else ""
+        tile = (f'<div class="fp-tile {status}{fresh}"><div class="fp-n">{T("Step")} {s_["n"]}</div>'
+                f'<div class="fp-t">{check}{esc(T(s_["title"]))}</div><div class="fp-d">{esc(T(s_["detail"]))}</div>'
+                f'{pill}<div class="fp-f">{esc(s_["figure"])} {badge_html}</div>'
+                f'<div class="fp-s">{T(STATUS_LABEL[status])}</div></div>')
+        link = ""
+        if s_["why"]:
+            on = " on" if status == "done" else ""
+            link = (f'<div class="fp-link{on}"><span class="fp-arrow" aria-hidden="true">→</span>'
+                    f'<span class="fp-why">{esc(T(s_["why"]))}</span></div>')
+        aria = esc(f'{T("Step")} {s_["n"]} {T("of")} {total}, {T(STATUS_ARIA[status])}: {T(s_["title"])}')
+        items.append(f'<li aria-label="{aria}">{tile}{link}</li>')
+    return f'<ol class="fixpath">{"".join(items)}</ol>'
+
+
 def page_start():
-    rs = journey.readiness_score(best_scores())
     r = journey.readiness(best_scores())
+    rv = journey.readiness_view(best_scores())
     top = journey.top_three()
     nxt = next((rb for rb in journey.roadblocks() if best_scores().get(rb.id, 0) < 4), None)
 
     # --- readiness card + Vicky's quote (the mock's top row)
     c1, c2 = st.columns([1, 2], gap="medium")
     with c1:
-        if rs["score"] < rs["with_top3"]:
-            msg = T("Not seed-ready yet. Practising your top 3 moves you to {n}.", n=rs["with_top3"])
-        elif nxt:
-            msg = T("Getting there. Next up: {next}.", next=low(T(nxt.title)))
-        else:
-            msg = T("Every roadblock answered well. The last points come from fixing the deck itself.")
+        rows = "".join(f'<div class="chk"><span class="ic" aria-hidden="true">{row["icon"]}</span>'
+                       f'<span>{esc(T(row["key"], n=row["n"]))}</span></div>' for row in rv["rows"])
         st.markdown(f'<div class="ready"><div class="eyebrow"><span style="color:{PURPLE}">/</span> {T("Readiness")}</div>'
-                    f'<div class="big">{rs["score"]}<span>/100</span></div><div style="font-size:.92rem;opacity:.85">'
-                    f'{esc(msg)}</div><div class="bar"><div style="width:{rs["score"]}%"></div></div></div>',
-                    unsafe_allow_html=True)
+                    f'<div class="level">{esc(T(rv["level"]))}</div>{rows}'
+                    f'<div class="bar" role="progressbar" aria-label="{T("Readiness")}" aria-valuemin="0" '
+                    f'aria-valuemax="100" aria-valuenow="{rv["bar"]}" aria-valuetext="{esc(T(rv["level"]))}">'
+                    f'<div style="width:{rv["bar"]}%"></div></div></div>', unsafe_allow_html=True)
         if st.button(T("View breakdown →"), type="tertiary", key="rd_break"):
-            detail("Readiness breakdown", "How your score out of 100 is built. Every point traces to the data or to your practice.", [
-                {"text": "Deck claims that survive a first meeting", "figure": f"{rs['deck_points']}/30 pts",
-                 "prov": "historical", "ref": "Deck claim check: 3 of 9 hold up (2 reword, 1 upside)"},
-                {"text": "Roadblocks you can answer well (4+/5 in practice)", "figure": f"{rs['practice_points']}/70 pts",
-                 "prov": "historical", "ref": f"{r['ready']} of {r['total']} roadblocks; the top 3 count double"},
-                {"text": "Fix the deck itself (update the 6 failing claims)", "figure": "+20 pts",
-                 "prov": "founder_claim", "ref": "A real-world fix: edit the slides, then re-run the check"},
-            ])
+            best = best_scores()
+            detail("Readiness breakdown", "What investors will like, what to fix in the deck, and how your top 3 "
+                   "answers are going. Every line traces to the data or to your practice.",
+                   [{"text": s_["title"], "figure": s_["figure"], "prov": s_["provenance"], "ref": s_["ref"]}
+                    for s_ in journey.strengths()]
+                   + [{"text": f"Fix: “{c['claim']}”", "figure": c["status"], "prov": "founder_claim",
+                       "ref": c["suggested_fix"]} for c in journey.claims_to_fix()]
+                   + [{"text": rb.title, "figure": f"{best[rb.id]:.1f}/5" if rb.id in best else T("Not yet"),
+                       "prov": "historical", "ref": T("Practised to 4+/5") if best.get(rb.id, 0) >= 4
+                       else T("Practise it to 4+/5")} for rb in top])
     with c2:
         if r["percent"] == 0:
             quote = esc(T("“Your growth is real and your burn is efficient. Lead with that. But fix three things before "
@@ -565,6 +621,20 @@ def page_start():
                       on_click=go, args=(NAV[1],), kwargs={"practice_rb": nxt.id, "practice_text": ""})
         else:
             st.button(T("Enter {panel} →", panel=T(PANEL_NAME)), type="primary", on_click=go, args=(NAV[3],))
+
+    # --- your fix path: each fix unlocks the next
+    steps = journey.fix_path(best_scores(), latest=st.session_state.get("latest_fix"))
+    with st.container(border=True):
+        st.markdown(f'<div class="ctitle"><span style="color:{PURPLE}">/</span> {T("Your fix path")}</div>'
+                    f'<div class="csub">{T("Each fix unlocks the next. Practise one and watch the next domino fall.")}</div>'
+                    + fix_path_html(steps), unsafe_allow_html=True)
+        first = next((s_ for s_ in steps if s_["status"] == "first"), None)
+        if first and first["practice_rb"]:
+            st.button(f'{T("Practise this →")} {T(first["title"])}', type="primary", key="fp_go", on_click=go,
+                      args=(NAV[1],), kwargs={"practice_rb": first["practice_rb"], "practice_text": ""})
+        elif first:  # the destination: everything before it is fixed
+            st.button(T("Enter {panel} →", panel=T(PANEL_NAME)), type="primary", key="fp_go", on_click=go,
+                      args=(NAV[3],))
 
     st.markdown(f'<div class="divider"><span class="eyebrow"><span style="color:{PURPLE}">/</span> {T("Snapshot")}</span></div>',
                 unsafe_allow_html=True)
@@ -706,8 +776,8 @@ def page_practise():
         w = attempts[-1]["weighted"]
         tip = esc(attempts[-1]["improve"].split(". ")[0].rstrip(".")) + "."
         if w >= 4:
-            vicky_says(T("<b>That's an answer a lead investor writes down.</b> {w} out of 5. Readiness is now {score}/100.",
-                         w=f"{w:.1f}", score=journey.readiness_score(best_scores())["score"]), "proud")
+            vicky_says(T("<b>That's an answer a lead investor writes down.</b> {w} out of 5. That's {n} of your top 3 done.",
+                         w=f"{w:.1f}", n=journey.top3_done(best_scores())), "proud")
         elif w >= 3:
             vicky_says(T("Close: {w} out of 5. One thing to fix: {tip} Try again?", w=f"{w:.1f}", tip=tip), "happy")
         else:
