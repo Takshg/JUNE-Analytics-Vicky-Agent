@@ -15,6 +15,21 @@ from langchain_openai import ChatOpenAI
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 
+
+def _load_streamlit_secrets() -> None:
+    """On Streamlit Cloud there is no .env: copy top-level secrets (App settings → Secrets) into the
+    environment so the os.getenv calls below see them. Values already in the environment win."""
+    try:
+        import streamlit as st
+        for key, value in st.secrets.items():
+            if isinstance(value, (str, int, float)) and not os.getenv(key):
+                os.environ[key] = str(value)
+    except Exception:  # no secrets.toml locally, or streamlit not running
+        pass
+
+
+_load_streamlit_secrets()
+
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 GOOGLE = "generativelanguage.googleapis.com"
 # (default model, fallbacks) per provider. OpenRouter applies fallbacks server-side; for others the client does.
