@@ -17,6 +17,7 @@ The look follows June's own platform (designed as a Lovable mock, rebuilt in Str
 | **Practise** | One roadblock at a time: understand it in plain language → answer the investor's question → get scored → retry → watch the score go up. Readiness rises as answers improve. |
 | **Investor Q&A** | One investor (5 personas from Appendix E) with follow-up questions and a debrief. Founders can **upload their pitch deck (PDF)** and point at a slide while answering: code checks the slide and flags where the slide and the spoken answer disagree, and the debrief lists the slides to fix (`vicky/deck.py`; sample decks in `assets/sample_deck/`). |
 | **Partner meeting** (Vicky's Partner Meeting) | Three investors, six questions, a 45-second clock. Each investor walks out when an answer trips their deal-breaker. The scorecard says why, and links to practise the weakest answer. (In a real raise, the partner meeting is the final step.) |
+| **Offer round** | The founder sets their own ask (Vicky never suggests a valuation), then up to four investors each make an offer: less money, more equity, or a condition like a board seat. Code keeps every offer inside the investor's cheque size (Appendix E) and a range anchored on Tidewell's SAFE caps, and computes what each one means (pre- and post-money valuation, vs the ask, share of the $4M). The founder has 90 seconds to accept, counter or walk away. The investors' responses are decided in code from each archetype's flexibility (accept, meet halfway, hold firm or withdraw; the government fund co-invests beside a signed lead); the AI only writes their words. Vicky's audited debrief separates money agreed from offers still on the table and explains the trade-offs without saying which offer to take (`vicky/offers.py`). |
 | **Ask Vicky** | Founder asks finance questions. A hierarchical decision model (`vicky/decision.py`): a code-only policy gate → the AI picks the question type → code validates and runs the tool plan. The answer shows its decision trace, numbered reasoning and evidence, and is audited before display. |
 | **Financials** | Every number with its calculation, the deck claim check, the scenario lab and the investor prep pack. |
 
@@ -88,7 +89,7 @@ uv run streamlit run app.py
 **Windows:** if you see `UnicodeDecodeError`, pull the latest code (all file reads are now UTF-8), or run
 `$env:PYTHONUTF8=1` first.
 
-Start here, Practise, Vicky's Partner Meeting and the Financials work with **no API key**, using the rule-based scorer. Investor Q&A
+Start here, Practise, Vicky's Partner Meeting, the Offer round and the Financials work with **no API key**, using the rule-based scorer (the Offer round falls back to rule-based offers, replies and debrief). Investor Q&A
 and Ask Vicky need the AI.
 
 **OpenRouter free tier:** 50 requests/day until you've bought $10 of credits, then 1,000/day. Each coach

@@ -286,7 +286,9 @@ def test_app_ask_vicky_renders_decision_details(fake_llm, monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", "test")
     fake_llm(_plan_json("what_if", [{"name": "run_scenario", "args": {"monthly_churn": 0.02, "ae_ramp_months": 3}}]),
              "REASONING:\n1. Two drivers.\n2. Scenario.\n3. Shorter runway.\nANSWER:\nRunway shortens versus the plan.")
-    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60).run()
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60)
+    at.session_state["nav"] = "Ask Vicky"  # the app navigates with a segmented control, not tabs
+    at.run()
     assert not at.exception
     next(b for b in at.button if "churn stays at 2%" in b.label).click().run()
     assert not at.exception

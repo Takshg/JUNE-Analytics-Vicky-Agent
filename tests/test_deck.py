@@ -195,6 +195,7 @@ def test_app_meeting_shows_slide_viewer(sample, spy_llm, monkeypatch):
     at.session_state["pitch"] = pitch.PitchSession("lead_seed_fund", max_questions=2, deck=sample)
     at.session_state["pitch_persona"] = "lead_seed_fund"
     at.session_state["pitch_deck"] = sample
+    at.session_state["nav"] = "Investor Q&A"
     at.run()
     assert not at.exception
     picker = next(s for s in at.selectbox if s.label == "Slide you're referencing")

@@ -17,7 +17,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 from langchain_core.messages import AIMessage, HumanMessage
 
-from vicky import avatar, claims, data, forecast, handoff, hotseat, i18n, journey, lingo, llm, metrics, practice
+from vicky import (avatar, claims, data, forecast, handoff, hotseat, i18n, journey, lingo, llm, metrics, offers,
+                   practice)
 from vicky.audit import audit
 from vicky.glossary import escape_dollars, glossify, glossify_sections
 
@@ -40,11 +41,12 @@ DIM_LABEL = {"accuracy": "Accuracy", "evidence": "Shows the math", "candor": "Ho
 SEO_URL = os.getenv("SEO_URL", "").strip()
 SEO_TITLE = "The 10-Minute Test: 6 numbers seed investors check first"
 PANEL_NAME = "Vicky's Partner Meeting"  # was "Hot Seat": the real final step of a VC raise, hosted by Vicky
-NAV = ["Start here", "Practise", "Investor Q&A", "Partner meeting", "Ask Vicky", "Financials"]
+NAV = ["Start here", "Practise", "Investor Q&A", "Partner meeting", "Offer round", "Ask Vicky", "Financials"]
 PATH_SUB = "Where you are, what's in the way, and where you want to be."
 TOP3_TITLE = "Top 3 questions you'll be asked"
 PAGE_TITLES = {"Start here": "Start here", "Practise": "Practise", "Investor Q&A": "Investor Q&A",
-               "Partner meeting": PANEL_NAME, "Ask Vicky": "Ask Vicky", "Financials": "Financials"}
+               "Partner meeting": PANEL_NAME, "Offer round": "Offer round", "Ask Vicky": "Ask Vicky",
+               "Financials": "Financials"}
 
 st.markdown(f"""<style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap');
@@ -1017,6 +1019,139 @@ def page_hotseat():
         st.rerun()
 
 
+# ================================================================ 4b. OFFER ROUND
+OFFER_INTRO = "The last step of a raise: the offers. Tell the investors what you're asking for and each one makes an offer. You have <b>{secs} seconds</b> to accept one, counter, or walk away. Then you'll see how they respond, and what the deal really means."
+OFFER_STEPS = [
+    "**You set the ask.** How much you're raising, and for how much of the company. Vicky never suggests a valuation: the number is yours.",
+    "**The investors make offers.** Each one at the table makes one offer in their own style: less money, more equity, or a condition like a board seat. Offers stay within each investor's real cheque size (Appendix E) and a realistic range set by your SAFE caps.",
+    '**You decide on the clock.** Each offer card shows what it really means: the valuation before and after the money, how it compares with your ask, and how much of the $4M it covers. Accept, counter or walk away within {secs} seconds.',
+    '**The investors respond.** Counter too far and an investor holds firm or walks away; stay close and they accept or meet you halfway. If the lead fund signs, the government-backed fund joins at the same price.',
+    '**Vicky explains the deal.** Money agreed versus still on the table, the ownership you give up, the conditions you accept, and how your SAFEs convert. She never says which offer to take.',
+]
+OFFER_FOOT = "Numbers come from code. The AI writes the investors' words and Vicky's explanation, and an independent check reviews every figure before you see it."
+
+def _offer_card(o: dict, ask_money: float, ask_equity: float):
+    t = offers.terms(o, ask_money, ask_equity)
+    with st.container(border=True):
+        st.markdown(f"{face(o['persona'], 'happy', size=56)}<br><b>{esc(person(o['persona']))}</b>",
+                    unsafe_allow_html=True)
+        st.markdown(f"### ${o['money'] / 1e6:.2f}M for {o['equity']:g}%")
+        if o.get("condition"):
+            st.markdown(f"**{T('Condition')}:** {esc(o['condition'])}")
+        if o.get("pitch"):
+            st.markdown(f"*“{esc(o['pitch'])}”*")
+        st.markdown(glossify(f"Post-money ${t['post_money'] / 1e6:.1f}M · pre-money ${t['pre_money'] / 1e6:.1f}M  \n"
+                             f"{t['vs_ask'] * 100:+.0f}% vs your ask · {t['share_of_raise'] * 100:.0f}% of the raise"),
+                    unsafe_allow_html=True)
+        if o.get("adjusted"):
+            st.caption("Kept in bounds by code: " + "; ".join(o["adjusted"]))
+
+
+def page_offers():
+    profiles = data.investor_profiles()
+    rnd = st.session_state.get("offer_round")
+    if not rnd:
+        vicky_says(T(OFFER_INTRO, secs=offers.TIME_LIMIT_SECONDS), "happy")
+        with st.expander(T("How the offer round works")):
+            st.markdown("\n".join(f"{n}. {T(step, secs=offers.TIME_LIMIT_SECONDS)}"
+                                   for n, step in enumerate(OFFER_STEPS, 1)).replace("$", "\\$"))
+            st.caption(T(OFFER_FOOT))
+        c1, c2 = st.columns(2)
+        ask_money = c1.number_input(T("You're raising ($)"), min_value=250_000, max_value=10_000_000, step=250_000,
+                                    value=int(data.company()["raise"]["amount"]))
+        ask_equity = c2.number_input(T("For this much equity (%)"), min_value=1.0, max_value=50.0, step=0.5, value=None,
+                                     placeholder=T("Your call"))
+        st.caption(T("The ask is yours: Vicky doesn't suggest a valuation."))
+        chosen = st.multiselect(T("Investors at the table"), offers.investors(), default=offers.DEFAULT_INVESTORS,
+                                format_func=person)
+        if st.button(T("Bring in the offers"), type="primary", disabled=not (ask_equity and chosen)):
+            with st.spinner(T("The investors are writing their offers…")):
+                offs = offers.generate(chosen, float(ask_money), float(ask_equity), use_ai=use_ai(), lang=LANG())
+            st.session_state.offer_round = {"ask": (float(ask_money), float(ask_equity)), "offers": offs,
+                                            "started": time.time(), "decision": None, "reactions": None,
+                                            "debrief": None}
+            st.rerun()
+        st.caption(T("Investor types are archetypes from the data pack (Appendix E), not real firms or people. "
+                     "Offers are role-play, kept inside each investor's cheque range by code."))
+        return
+
+    ask_money, ask_equity = rnd["ask"]
+    offs = rnd["offers"]
+    st.markdown(escape_dollars(f"**{T('Your ask')}:** ${ask_money:,.0f} for {ask_equity:g}%"))
+    for col, o in zip(st.columns(len(offs)), offs):
+        with col:
+            _offer_card(o, ask_money, ask_equity)
+
+    if not rnd["decision"]:
+        @st.fragment(run_every=1)
+        def clock():
+            left = offers.TIME_LIMIT_SECONDS - int(time.time() - rnd["started"])
+            if left <= 0:
+                rnd["decision"] = {"kind": "timeout"}
+                rnd["seconds"] = offers.TIME_LIMIT_SECONDS
+                st.rerun(scope="app")
+            color = "#c0392b" if left <= 15 else "#111"
+            st.markdown(f"<div class='timer' style='color:{color}'>⏱ {left}s</div>", unsafe_allow_html=True)
+        clock()
+        choices = [("accept", i) for i in range(len(offs))] + [("counter", None), ("walk", None)]
+        labels = {("counter", None): T("Counter-offer"), ("walk", None): T("Walk away from every offer")}
+        pick = st.radio(T("Your decision"), choices, format_func=lambda c: labels.get(c) or
+                        f"{T('Accept')} {person(offs[c[1]]['persona'])}: ${offs[c[1]]['money']:,.0f} for "
+                        f"{offs[c[1]]['equity']:g}%", key="offer_pick")
+        decision = {"kind": pick[0], "index": pick[1]}
+        if pick[0] == "counter":
+            c1, c2, c3 = st.columns(3)
+            decision["index"] = c1.selectbox(T("Counter to"), range(len(offs)), format_func=lambda i: person(offs[i]["persona"]))
+            decision["money"] = float(c2.number_input(T("Amount ($)"), min_value=10_000, step=50_000,
+                                                      value=int(offs[decision["index"]]["money"])))
+            decision["equity"] = float(c3.number_input(T("Equity (%)"), min_value=0.1, max_value=50.0, step=0.5,
+                                                       value=float(offs[decision["index"]]["equity"])))
+        if st.button(T("Lock in my decision"), type="primary"):
+            rnd["decision"], rnd["seconds"] = decision, int(time.time() - rnd["started"])
+            st.rerun()
+        return
+
+    # --- reveal
+    st.divider()
+    said = offers.describe_decision(rnd["decision"], offs, ask_money, ask_equity)
+    st.subheader(T("Your decision"))
+    st.markdown(glossify(f"You {said}.") + f"  \n<span class='small'>{rnd.get('seconds', 0)}s</span>",
+                unsafe_allow_html=True)
+    st.markdown(f"**{T('How the investors responded')}**")
+    if rnd["reactions"] is None:
+        with st.spinner(T("The investors are responding…")):
+            rnd["reactions"] = offers.voice(offers.reactions(rnd["decision"], offs), said, use_ai=use_ai(), lang=LANG())
+    for r in rnd["reactions"]:
+        good = r["outcome"] in ("deal", "halfway", "co_invest")
+        terms_txt = f" · ${r['money']:,.0f} for {r['equity']:g}%" if r["money"] else ""
+        mood = "proud" if good else "stern" if r["outcome"] in ("withdraw", "waiting") else "happy"
+        st.markdown(f"<div class='vicky'>{face(r['persona'], mood, size=40)}<div style='padding-top:4px'>"
+                    f"<b>{esc(person(r['persona']))}</b> · {esc(T(offers.OUTCOME_LABEL[r['outcome']]))}"
+                    f"{esc(terms_txt)}<br>{esc(r['line'])}"
+                    + (f"<br><span class='small'>({esc(r['note'])})</span>" if r["note"] else "") + "</div></div>",
+                    unsafe_allow_html=True)
+    summary = offers.round_summary(rnd["reactions"])
+    if summary["raised"]:
+        c1, c2 = st.columns(2)
+        c1.metric(T("Committed if these close"), f"${summary['raised'] / 1e6:.2f}M",
+                  f"{summary['share'] * 100:.0f}% of the ${summary['target'] / 1e6:.0f}M raise", delta_color="off")
+        c2.metric(T("Equity sold"), f"{summary['equity_sold']:g}%")
+    st.caption(T("Investors' moves are decided by code from each archetype's flexibility and cheque range; the AI "
+                 "only writes their words."))
+    st.markdown(f"**{T('What the terms mean')}**")
+    if rnd["debrief"] is None:
+        with st.spinner(T("Vicky is working through the terms…")):
+            rnd["debrief"] = offers.debrief(rnd["decision"], offs, ask_money, ask_equity, rnd["reactions"],
+                                            use_ai=use_ai(), lang=LANG())
+    st.markdown(glossify(rnd["debrief"]["text"]), unsafe_allow_html=True)
+    if rnd["debrief"]["audit"]:
+        render_audit([{**rnd["debrief"]["audit"], "round": 1}], "Debrief audit")
+    if st.button(T("New offer round")):
+        st.session_state.pop("offer_round", None)
+        st.session_state.pop("offer_pick", None)
+        st.rerun()
+
+
 # ================================================================ 5. ASK VICKY (Ronald's coach)
 INTENT_LABEL = {  # Taksh Girdhar's decision model: the question type Vicky chose
     "explain_metric": ("Explain a metric", "#007277", "#DDF1F1"),
@@ -1305,4 +1440,4 @@ def deep_scenarios():
 
 # ---------------------------------------------------------------- router
 {NAV[0]: page_start, NAV[1]: page_practise, NAV[2]: page_mock, NAV[3]: page_hotseat,
- NAV[4]: page_ask, NAV[5]: page_deep}[page]()
+ NAV[4]: page_offers, NAV[5]: page_ask, NAV[6]: page_deep}[page]()
