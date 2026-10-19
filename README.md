@@ -1,6 +1,6 @@
 # Vicky: AI venture capitalist (June Analytics challenge, Catalyst 2026)
 
-Vicky gets the founders of Tidewell Systems ready for their $4M seed round. She shows them **where they
+Vicky gets the founders ready for their $4M seed round. She shows them **where they
 stand**, **what's in the way** and **how to get where they want to be**, then has them **practise until
 they're confident**.
 
