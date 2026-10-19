@@ -4,6 +4,8 @@ Vicky gets the founders ready for their $4M seed round. She shows them **where t
 stand**, **what's in the way** and **how to get where they want to be**, then has them **practise until
 they're confident**.
 
+**Try it live:** https://june-analytics-vicky-agent.streamlit.app/
+
 > June told us: founders are stressed, information overload is the failure mode, and the coach should
 > build confidence without being a yes-man. So Vicky is a guided journey, one step at a time.
 
@@ -145,6 +147,8 @@ credits). Each coach answer is 1–3 calls; each pitch turn or AI-scored practic
 near the limit. The sidebar **Test AI connection** button checks the key and model.
 
 ## Deploy (Streamlit Community Cloud, free)
+
+Live app: https://june-analytics-vicky-agent.streamlit.app/
 
 1. Push this repo to GitHub.
 2. Go to share.streamlit.io → **Create app** → choose the repo, branch `main`, main file `app.py`.
